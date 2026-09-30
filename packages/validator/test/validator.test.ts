@@ -26,6 +26,12 @@ describe("Typed IR hostile validation",()=>{
     expect(result.diagnostics.some(d=>d.code==="SCHEMA_UNKNOWN_FIELD")).toBe(true);
   });
 
+  it("rejects unknown nested fields",()=>{
+    const result=validateDiagramIR({...valid,document:{title:"Runtime",unexpected:"drop-me"}});
+    expect(result.valid).toBe(false);
+    expect(result.diagnostics.some(d=>d.code==="SCHEMA_UNKNOWN_FIELD" && d.path==="document.unexpected")).toBe(true);
+  });
+
   it("rejects unsupported versions",()=>{
     const result=validateDiagramIR({...valid,version:"9.9"});
     expect(result.valid).toBe(false);
