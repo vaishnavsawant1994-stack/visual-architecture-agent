@@ -1,14 +1,10 @@
-import {describe,expect,it} from "vitest";
-import type {DiagramIR,DiagramKind} from "@visual-architecture/ir";
-import {semanticEngines,validateSemantics} from "../src/index";
-
+import {describe,expect,it} from "vitest";import type {DiagramIR,DiagramKind} from "@visual-architecture/ir";import {semanticEngines,validateSemantics} from "../src/index";
 const base=(kind:DiagramKind):DiagramIR=>({version:"1.0",kind,document:{title:kind},nodes:[],relationships:[],boundaries:[],evidence:[],presentation:{}});
-
 describe("five independent semantic engines",()=>{
  it("registers exactly five engines",()=>expect(Object.keys(semanticEngines).sort()).toEqual(["architecture","data-flow","lifecycle","sequence","workflow"]));
- it("architecture rejects empty component graph",()=>expect(validateSemantics(base("architecture")).some(d=>d.code==="ARCHITECTURE_EMPTY")).toBe(true));
- it("workflow requires START semantics",()=>expect(validateSemantics(base("workflow")).some(d=>d.code==="WORKFLOW_START_MISSING")).toBe(true));
- it("sequence requires at least two participants",()=>expect(validateSemantics(base("sequence")).some(d=>d.code==="SEQUENCE_PARTICIPANTS_INSUFFICIENT")).toBe(true));
- it("data flow rejects non-flow relationships",()=>{const ir=base("data-flow");ir.nodes=[{id:"a",type:"source",label:"A"},{id:"b",type:"destination",label:"B"}];ir.relationships=[{id:"r",source:"a",target:"b",type:"calls"}];expect(validateSemantics(ir).some(d=>d.code==="DATA_FLOW_RELATION_TYPE_INVALID")).toBe(true);});
- it("lifecycle requires canonical state semantics",()=>expect(validateSemantics(base("lifecycle")).some(d=>d.code==="LIFECYCLE_START_MISSING")).toBe(true));
+ it("architecture validates roles and nested boundary references",()=>{const ir=base("architecture");ir.nodes=[{id:"api",type:"service",label:"API"}];ir.boundaries=[{id:"outer",type:"trust",label:"Outer",boundaryIds:["missing"]}];const d=validateSemantics(ir);expect(d.some(x=>x.code==="BOUNDARY_NESTING_INVALID")).toBe(true)});
+ it("workflow requires exactly one start, an end and main path",()=>{const ir=base("workflow");ir.nodes=[{id:"s",type:"start",label:"S"},{id:"x",type:"step",label:"X"},{id:"e",type:"end",label:"E"}];ir.relationships=[{id:"r",source:"s",target:"x",type:"flow"}];expect(validateSemantics(ir).some(d=>d.code==="WORKFLOW_MAIN_PATH_MISSING")).toBe(true)});
+ it("sequence enforces participant and temporal ordering",()=>{const ir=base("sequence");ir.nodes=[{id:"a",type:"participant",label:"A"},{id:"b",type:"participant",label:"B"}];ir.relationships=[{id:"m1",source:"a",target:"b",type:"message",metadata:{order:2}},{id:"m2",source:"b",target:"a",type:"reply",metadata:{order:1}}];expect(validateSemantics(ir).some(d=>d.code==="SEQUENCE_ORDER_INVALID")).toBe(true)});
+ it("data flow requires source/destination and flow edges",()=>{const ir=base("data-flow");ir.nodes=[{id:"a",type:"source",label:"A"},{id:"b",type:"destination",label:"B"}];ir.relationships=[{id:"r",source:"a",target:"b",type:"calls"}];expect(validateSemantics(ir).some(d=>d.code==="DATA_FLOW_RELATION_TYPE_INVALID")).toBe(true)});
+ it("lifecycle rejects outgoing edges from terminal states",()=>{const ir=base("lifecycle");ir.nodes=[{id:"start",type:"state",label:"Start",metadata:{state:"START"}},{id:"done",type:"state",label:"Done",metadata:{state:"COMPLETED"}}];ir.relationships=[{id:"bad",source:"done",target:"start",type:"transition"}];expect(validateSemantics(ir).some(d=>d.code==="LIFECYCLE_TERMINAL_OUTGOING")).toBe(true)});
 });
