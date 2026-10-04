@@ -4,7 +4,7 @@ export interface SourceRange{repository:string;commitSha:string;file:string;line
 export interface Finding{id:string;kind:string;label:string;classification:EvidenceClassification;confidence:number;source:SourceRange;metadata?:Record<string,unknown>}
 
 export function evidenceFromFinding(f:Finding,nodeId?:string,relationshipId?:string):Evidence{
- return{id:`evidence-${f.id}`,classification:f.classification,repository:f.source.repository,commitSha:f.source.commitSha,file:f.source.file,lineStart:f.source.lineStart,lineEnd:f.source.lineEnd,blobSha:f.source.blobSha,contentHash:f.source.contentHash,nodeId,relationshipId,confidence:f.confidence,excerpt:f.source.excerpt};
+ return{id:`evidence-${f.id}`,classification:f.classification,repository:f.source.repository,commitSha:f.source.commitSha,file:f.source.file,lineStart:f.source.lineStart,lineEnd:f.source.lineEnd,blobSha:f.source.blobSha,contentHash:f.source.contentHash,...(nodeId===undefined?{}:{nodeId}),...(relationshipId===undefined?{}:{relationshipId}),confidence:f.confidence,...(f.source.excerpt===undefined?{}:{excerpt:f.source.excerpt})};
 }
 export function validatePinnedEvidence(e:Evidence):string[]{
  const errors:string[]=[];
