@@ -8,7 +8,7 @@ const ir:DiagramIR={version:"1.0",kind:"architecture",document:{title:"Browser G
 const html=createSelfContainedHtml(ir,layoutDiagram(ir));
 async function probe(width:number,height:number,hasTouch=false){
  const browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width,height},hasTouch,isMobile:hasTouch});const page=await context.newPage();const errors:string[]=[];page.on("console",m=>{if(m.type()==="error")errors.push(m.text())});page.on("pageerror",e=>errors.push(e.message));await page.setContent(html,{waitUntil:"load"});
- const click=async(sel:string)=>page.locator(sel).first().evaluate((e:any)=>e.click());
+ const click=async(sel:string)=>page.locator(sel).first().evaluate((e:any)=>e.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true})));
  try{
   expect(await page.locator("#viewport").getAttribute("aria-label")).toBe("Interactive diagram");
   const before=await page.locator("#canvas").evaluate((e:any)=>e.style.transform);await click('[data-action="zoom-in"]');const zoomed=await page.locator("#canvas").evaluate((e:any)=>e.style.transform);expect(zoomed).not.toBe(before);
