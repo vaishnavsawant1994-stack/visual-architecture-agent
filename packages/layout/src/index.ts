@@ -1,36 +1,24 @@
-import type {DiagramIR} from "@visual-architecture/ir";
-
+import type {DiagramIR,DiagramNode,DiagramBoundary,Diagnostic} from "@visual-architecture/ir";
 export interface Point{x:number;y:number}
-export interface NodeGeometry{id:string;x:number;y:number;width:number;height:number}
-export interface EdgeGeometry{id:string;points:Point[]}
-export interface LayoutResult{nodes:NodeGeometry[];edges:EdgeGeometry[];width:number;height:number;geometryHash:string}
-
-const WIDTH=180,HEIGHT=72,GAP_X=80,GAP_Y=56,PADDING=48,COLUMNS=4;
-
-function stableHash(value:string):string{
- let h=2166136261;
- for(let i=0;i<value.length;i++){h^=value.charCodeAt(i);h=Math.imul(h,16777619);}
- return (h>>>0).toString(16).padStart(8,"0");
-}
-
-export function layoutDiagram(ir:DiagramIR):LayoutResult{
- const ordered=[...ir.nodes].sort((a,b)=>a.id.localeCompare(b.id));
- const nodes=ordered.map((node,index)=>{
-  const column=index%COLUMNS,row=Math.floor(index/COLUMNS);
-  return{id:node.id,x:PADDING+column*(WIDTH+GAP_X),y:PADDING+row*(HEIGHT+GAP_Y),width:WIDTH,height:HEIGHT};
- });
- const byId=new Map(nodes.map(n=>[n.id,n]));
- const edges=[...ir.relationships].sort((a,b)=>a.id.localeCompare(b.id)).flatMap(rel=>{
-  const s=byId.get(rel.source),t=byId.get(rel.target);
-  if(!s||!t)return[];
-  const start={x:s.x+s.width,y:s.y+s.height/2},end={x:t.x,y:t.y+t.height/2};
-  const midX=(start.x+end.x)/2;
-  return[{id:rel.id,points:[start,{x:midX,y:start.y},{x:midX,y:end.y},end]}];
- });
- const rows=Math.max(1,Math.ceil(nodes.length/COLUMNS));
- const cols=Math.max(1,Math.min(COLUMNS,nodes.length));
- const width=PADDING*2+cols*WIDTH+Math.max(0,cols-1)*GAP_X;
- const height=PADDING*2+rows*HEIGHT+Math.max(0,rows-1)*GAP_Y;
- const canonical=JSON.stringify({nodes,edges,width,height});
- return{nodes,edges,width,height,geometryHash:stableHash(canonical)};
-}
+export interface Rect{x:number;y:number;width:number;height:number}
+export interface NodeGeometry extends Rect{id:string;labelLines:string[];laneId?:string}
+export interface ContainerGeometry extends Rect{id:string;kind:"boundary"|"lane"|"phase"|"segment";label:string;depth:number}
+export interface EdgeGeometry{id:string;points:Point[];label?:string;labelBox?:Rect}
+export interface LegendGeometry extends Rect{items:string[]}
+export interface LayoutConfig{nodeMinWidth:number;nodeHeight:number;nodeGapX:number;nodeGapY:number;containerPadding:number;headingClearance:number;laneGap:number;phaseGap:number;labelClearance:number;edgeClearance:number;canvasPadding:number;legendGap:number;maxLabelChars:number}
+export interface LayoutResult{nodes:NodeGeometry[];containers:ContainerGeometry[];edges:EdgeGeometry[];legend?:LegendGeometry;width:number;height:number;bounds:Rect;initialViewport:Rect;diagnostics:Diagnostic[];geometryHash:string;engineVersion:string}
+export const LAYOUT_ENGINE_VERSION="2.0.0";
+export const DEFAULT_LAYOUT_CONFIG:LayoutConfig={nodeMinWidth:180,nodeHeight:72,nodeGapX:80,nodeGapY:56,containerPadding:32,headingClearance:34,laneGap:28,phaseGap:28,labelClearance:10,edgeClearance:18,canvasPadding:48,legendGap:28,maxLabelChars:24};
+const cmp=(a:string,b:string)=>a<b?-1:a>b?1:0;
+const hash=(s:string)=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return(h>>>0).toString(16).padStart(8,"0")};
+const lines=(s:string,max:number)=>{const chars=Array.from(s);if(!chars.length)return[""];const out:string[]=[];for(let i=0;i<chars.length;i+=max)out.push(chars.slice(i,i+max).join(""));return out};
+const textWidth=(s:string)=>Array.from(s).reduce((n,c)=>n+(c.codePointAt(0)!>255?14:8),0);
+const size=(n:DiagramNode,c:LayoutConfig)=>{const ls=lines(n.label,c.maxLabelChars),w=Math.max(c.nodeMinWidth,...ls.map(x=>textWidth(x)+2*c.labelClearance));return{width:w,height:Math.max(c.nodeHeight,28+ls.length*18),labelLines:ls}};
+const box=(xs:Rect[])=>xs.length?{x:Math.min(...xs.map(x=>x.x)),y:Math.min(...xs.map(x=>x.y)),width:Math.max(...xs.map(x=>x.x+x.width))-Math.min(...xs.map(x=>x.x)),height:Math.max(...xs.map(x=>x.y+x.height))-Math.min(...xs.map(x=>x.y))}:{x:0,y:0,width:0,height:0};
+const inside=(a:Rect,b:Rect)=>a.x>=b.x&&a.y>=b.y&&a.x+a.width<=b.x+b.width&&a.y+a.height<=b.y+b.height;
+function selfRoute(n:NodeGeometry):Point[]{const x=n.x+n.width,y=n.y+n.height/2,g=24;return[{x,y},{x:x+g,y},{x:x+g,y:y-g},{x,y:y-g},{x,y}]}
+function route(a:NodeGeometry,b:NodeGeometry):Point[]{if(a.id===b.id)return selfRoute(a);const right=b.x>=a.x+a.width/2,sx=right?a.x+a.width:a.x,tx=right?b.x:b.x+b.width,sy=a.y+a.height/2,ty=b.y+b.height/2,mx=(sx+tx)/2;return[{x:sx,y:sy},{x:mx,y:sy},{x:mx,y:ty},{x:tx,y:ty}]}
+function sequence(ir:DiagramIR,c:LayoutConfig){const ordered=[...ir.nodes].sort((a,b)=>Number(a.metadata?.order??0)-Number(b.metadata?.order??0)||cmp(a.id,b.id));const nodes:NodeGeometry[]=ordered.map((n,i)=>{const s=size(n,c);return{id:n.id,x:c.canvasPadding+i*(Math.max(s.width,c.nodeMinWidth)+c.nodeGapX),y:c.canvasPadding,width:s.width,height:s.height,labelLines:s.labelLines}});const by=new Map(nodes.map(n=>[n.id,n]));const rels=[...ir.relationships].sort((a,b)=>Number(a.metadata?.order??0)-Number(b.metadata?.order??0)||cmp(a.id,b.id));const edges:EdgeGeometry[]=rels.flatMap((r,i)=>{const a=by.get(r.source),b=by.get(r.target);if(!a||!b)return[];const y=c.canvasPadding+c.nodeHeight+c.nodeGapY+(i+1)*44;return[{id:r.id,points:[{x:a.x+a.width/2,y},{x:b.x+b.width/2,y}],...(r.label?{label:r.label,labelBox:{x:(a.x+b.x)/2,y:y-20,width:textWidth(r.label)+12,height:18}}:{})}]});return{nodes,edges,containers:[] as ContainerGeometry[]}}
+function ranked(ir:DiagramIR,c:LayoutConfig){const ns=[...ir.nodes].sort((a,b)=>cmp(a.id,b.id));const incoming=new Map(ns.map(n=>[n.id,0]));for(const r of ir.relationships)if(r.source!==r.target&&incoming.has(r.target))incoming.set(r.target,(incoming.get(r.target)??0)+1);const rank=new Map<string,number>(),q=ns.filter(n=>incoming.get(n.id)===0).map(n=>n.id);for(const id of q)rank.set(id,0);for(let qi=0;qi<q.length;qi++){const id=q[qi]!;for(const r of ir.relationships.filter(x=>x.source===id).sort((a,b)=>cmp(a.id,b.id))){if(rank.has(r.target))continue;rank.set(r.target,(rank.get(id)??0)+1);q.push(r.target)}}for(const n of ns)if(!rank.has(n.id))rank.set(n.id,0);if(ir.kind==="lifecycle")for(const n of ns)if(["COMPLETED","FAILED","CANCELLED"].includes(String(n.metadata?.state??n.label).toUpperCase()))rank.set(n.id,Math.max(...rank.values())+1);const buckets=new Map<number,DiagramNode[]>();for(const n of ns){const r=rank.get(n.id)!;buckets.set(r,[...(buckets.get(r)??[]),n])}const nodes:NodeGeometry[]=[];for(const r of [...buckets.keys()].sort((a,b)=>a-b)){const arr=buckets.get(r)!;arr.sort((a,b)=>cmp(a.id,b.id)).forEach((n,i)=>{const s=size(n,c);nodes.push({id:n.id,x:c.canvasPadding+r*(c.nodeMinWidth+c.nodeGapX+80),y:c.canvasPadding+i*(c.nodeHeight+c.nodeGapY),width:s.width,height:s.height,labelLines:s.labelLines,...(typeof n.metadata?.lane==="string"?{laneId:n.metadata.lane}:{})})})}const by=new Map(nodes.map(n=>[n.id,n]));const edges=[...ir.relationships].sort((a,b)=>cmp(a.id,b.id)).flatMap(r=>{const a=by.get(r.source),b=by.get(r.target);return a&&b?[{id:r.id,points:route(a,b),...(r.label?{label:r.label}:{})}]:[]});return{nodes,edges,containers:[] as ContainerGeometry[]}}
+function containers(ir:DiagramIR,nodes:NodeGeometry[],c:LayoutConfig){const byNode=new Map(nodes.map(n=>[n.id,n])),byBoundary=new Map(ir.boundaries.map(b=>[b.id,b]));const depth=(b:DiagramBoundary,seen=new Set<string>()):number=>{if(seen.has(b.id))return 0;seen.add(b.id);return 1+Math.max(0,...(b.boundaryIds??[]).map(id=>byBoundary.get(id)?depth(byBoundary.get(id)!,new Set(seen)):0))};const ordered=[...ir.boundaries].sort((a,b)=>depth(a)-depth(b)||cmp(a.id,b.id));const out:ContainerGeometry[]=[];for(const b of ordered){const children:Rect[]=[...(b.nodeIds??[]).map(id=>byNode.get(id)).filter((x):x is NodeGeometry=>!!x),...(b.boundaryIds??[]).map(id=>out.find(x=>x.id===id)).filter((x):x is ContainerGeometry=>!!x)];const bb=box(children),labelW=textWidth(b.label)+2*c.labelClearance;out.push({id:b.id,kind:"boundary",label:b.label,depth:depth(b),x:children.length?bb.x-c.containerPadding:c.canvasPadding,y:children.length?bb.y-c.containerPadding-c.headingClearance:c.canvasPadding,width:Math.max(labelW,children.length?bb.width+2*c.containerPadding:c.nodeMinWidth),height:children.length?bb.height+2*c.containerPadding+c.headingClearance:c.nodeHeight+c.headingClearance})}return out}
+export function layoutDiagram(ir:DiagramIR,config:Partial<LayoutConfig>={}):LayoutResult{const c={...DEFAULT_LAYOUT_CONFIG,...config};const core=ir.kind==="sequence"?sequence(ir,c):ranked(ir,c);const cs=containers(ir,core.nodes,c);const diagnostics:Diagnostic[]=[];for(const ct of cs){const b=ir.boundaries.find(x=>x.id===ct.id)!;for(const id of b.nodeIds??[]){const n=core.nodes.find(x=>x.id===id);if(n&&!inside(n,ct))diagnostics.push({stage:"layout",code:"LAYOUT_CONTAINMENT_FAILED",severity:"error",subject:id,message:"Contained node escaped its boundary."})}}for(const n of core.nodes)if(!Number.isFinite(n.x+n.y+n.width+n.height)||n.width<=0||n.height<=0)diagnostics.push({stage:"layout",code:"LAYOUT_INVALID_GEOMETRY",severity:"error",subject:n.id,message:"Node geometry must be finite and positive."});const all:Rect[]=[...core.nodes,...cs,...core.edges.flatMap(e=>e.points.map(p=>({x:p.x,y:p.y,width:0,height:0})))];const bb=box(all),width=Math.max(2*c.canvasPadding,bb.x+bb.width+c.canvasPadding),height=Math.max(2*c.canvasPadding,bb.y+bb.height+c.canvasPadding);const kinds=[...new Set(ir.nodes.map(n=>n.type))].sort(cmp);const legend=kinds.length>1?{x:c.canvasPadding,y:height+c.legendGap,width:Math.max(c.nodeMinWidth,...kinds.map(k=>textWidth(k)+24)),height:24+kinds.length*20,items:kinds}:undefined;const finalHeight=legend?legend.y+legend.height+c.canvasPadding:height;const canonical={engine:LAYOUT_ENGINE_VERSION,config:c,nodes:[...core.nodes].sort((a,b)=>cmp(a.id,b.id)),containers:[...cs].sort((a,b)=>cmp(a.id,b.id)),edges:[...core.edges].sort((a,b)=>cmp(a.id,b.id)),legend,width,height:finalHeight};return{...canonical,bounds:{x:0,y:0,width,height:finalHeight},initialViewport:{x:0,y:0,width,height:finalHeight},diagnostics,geometryHash:hash(JSON.stringify(canonical)),engineVersion:LAYOUT_ENGINE_VERSION}}
