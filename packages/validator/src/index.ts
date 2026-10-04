@@ -23,9 +23,6 @@ export function validateDiagramIR(input:unknown):ValidationResult {
     }
   };
   checkUnknown(value, ROOT_KEYS, "$");
-  for(const key of Object.keys(value)) if(!ROOT_KEYS.has(key))
-    diagnostics.push({stage:"schema",code:"SCHEMA_UNKNOWN_FIELD",severity:"error",subject:key,path:key,
-      message:`Unknown root field "${key}" is not permitted.`,fixes:["Remove the field or update the schema intentionally."]});
   if(value.version!=="1.0")
     diagnostics.push({stage:"schema",code:"SCHEMA_VERSION_UNSUPPORTED",severity:"error",subject:"version",
       message:"Only Typed IR version 1.0 is currently accepted."});
