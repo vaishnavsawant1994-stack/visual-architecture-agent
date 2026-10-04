@@ -1,5 +1,9 @@
 import type { Diagnostic, DiagramIR, ValidationResult } from "@visual-architecture/ir";
 import { schemaAcceptsShape } from "@visual-architecture/schemas";
+import { validateSemantics } from "@visual-architecture/semantic";
+import { layoutDiagram } from "@visual-architecture/layout";
+import { renderDiagram, validateRenderResult } from "@visual-architecture/renderer";
+import { exportHtml, validateExport } from "@visual-architecture/exporter";
 
 const ROOT_KEYS=new Set(["version","kind","document","nodes","relationships","boundaries","evidence","presentation"]);
 
@@ -63,4 +67,30 @@ export function validateDiagramIR(input:unknown):ValidationResult {
   }
   const valid=diagnostics.every(d=>d.severity!=="error");
   return valid?{valid:true,diagnostics,normalized:input as DiagramIR}:{valid:false,diagnostics};
+}
+
+export interface PipelineValidationResult extends ValidationResult { stages:Record<string,{valid:boolean;diagnostics:Diagnostic[]}>; deliveryEligible:boolean }
+const durable=/^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+export function validatePipeline(input:unknown):PipelineValidationResult{
+ const base=validateDiagramIR(input),stages:PipelineValidationResult["stages"]={schema:{valid:base.valid,diagnostics:[...base.diagnostics]}};
+ if(!base.valid||!base.normalized)return{...base,stages,deliveryEligible:false};
+ const ir=base.normalized,idDiagnostics:Diagnostic[]=[];
+ const ids=[...ir.nodes.map(n=>({id:n.id,path:"nodes"})),...ir.relationships.map(r=>({id:r.id,path:"relationships"})),...ir.boundaries.map(b=>({id:b.id,path:"boundaries"})),...ir.evidence.map(e=>({id:e.id,path:"evidence"}))];
+ for(const x of ids)if(!durable.test(x.id))idDiagnostics.push({stage:"id",code:"DURABLE_ID_INVALID",severity:"error",subject:x.id,path:x.path,message:"IDs must use lowercase durable kebab-case.",fixes:["rename-id"]});
+ stages.id={valid:!idDiagnostics.length,diagnostics:idDiagnostics};
+ const ref:Diagnostic[]=[];
+ const evidenceIds=new Set(ir.evidence.map(e=>e.id)),boundaryIds=new Set(ir.boundaries.map(b=>b.id)),nodeIds=new Set(ir.nodes.map(n=>n.id));
+ for(const n of ir.nodes)for(const e of n.evidenceIds??[])if(!evidenceIds.has(e))ref.push({stage:"relationship",code:"EVIDENCE_REFERENCE_MISSING",severity:"error",subject:n.id,message:"Node references missing evidence.",context:{evidenceId:e}});
+ for(const r of ir.relationships)for(const e of r.evidenceIds??[])if(!evidenceIds.has(e))ref.push({stage:"relationship",code:"EVIDENCE_REFERENCE_MISSING",severity:"error",subject:r.id,message:"Relationship references missing evidence.",context:{evidenceId:e}});
+ for(const b of ir.boundaries){for(const n of b.nodeIds??[])if(!nodeIds.has(n))ref.push({stage:"relationship",code:"BOUNDARY_NODE_MISSING",severity:"error",subject:b.id,message:"Boundary references missing node.",context:{nodeId:n}});for(const nested of b.boundaryIds??[])if(!boundaryIds.has(nested)||nested===b.id)ref.push({stage:"relationship",code:"BOUNDARY_REFERENCE_INVALID",severity:"error",subject:b.id,message:"Boundary references missing/self boundary.",context:{boundaryId:nested}})}
+ stages.relationship={valid:!ref.length,diagnostics:ref};
+ const model=validateSemantics(ir).map(d=>({...d,stage:"model" as const}));stages.model={valid:!model.some(d=>d.severity==="error"),diagnostics:model};
+ const graph:Diagnostic[]=[];const adjacency=new Map(ir.nodes.map(n=>[n.id,[] as string[]]));for(const r of ir.relationships)adjacency.get(r.source)?.push(r.target);
+ if(ir.nodes.length&&ir.kind!=="architecture"){const reached=new Set<string>(),q=[ir.nodes[0]!.id];while(q.length){const n=q.shift()!;if(reached.has(n))continue;reached.add(n);q.push(...(adjacency.get(n)??[]))}if(reached.size<ir.nodes.length)graph.push({stage:"graph",code:"GRAPH_DISCONNECTED",severity:"warning",message:"Graph contains nodes not reachable from the first authored node."})}
+ stages.graph={valid:!graph.some(d=>d.severity==="error"),diagnostics:graph};
+ let layoutDiagnostics:Diagnostic[]=[],svgDiagnostics:Diagnostic[]=[],artifactDiagnostics:Diagnostic[]=[];
+ try{const layout=layoutDiagram(ir);if(!(layout.width>0&&layout.height>0)||layout.nodes.some(n=>![n.x,n.y,n.width,n.height].every(Number.isFinite)))layoutDiagnostics.push({stage:"layout",code:"LAYOUT_INVALID",severity:"error",message:"Layout produced invalid geometry."});const rendered=renderDiagram(ir,layout);svgDiagnostics=validateRenderResult(rendered,ir.kind,layout.geometryHash).map(code=>({stage:"svg",code,severity:"error",message:code}));const artifact=exportHtml(ir,layout);artifactDiagnostics=validateExport(artifact).map(code=>({stage:"artifact",code,severity:"error",message:code}));}catch(error){layoutDiagnostics.push({stage:"layout",code:"LAYOUT_EXCEPTION",severity:"error",message:error instanceof Error?error.message:"Layout failed safely."})}
+ stages.layout={valid:!layoutDiagnostics.length,diagnostics:layoutDiagnostics};stages.svg={valid:!svgDiagnostics.length,diagnostics:svgDiagnostics};stages.artifact={valid:!artifactDiagnostics.length,diagnostics:artifactDiagnostics};
+ const all=Object.values(stages).flatMap(s=>s.diagnostics),deliveryEligible=!all.some(d=>d.severity==="error");stages.delivery={valid:deliveryEligible,diagnostics:deliveryEligible?[]:[{stage:"delivery",code:"DELIVERY_INELIGIBLE",severity:"error",message:"Candidate failed one or more qualification stages."}]};
+ return{valid:deliveryEligible,diagnostics:[...all,...stages.delivery.diagnostics],normalized:deliveryEligible?ir:undefined,stages,deliveryEligible};
 }
