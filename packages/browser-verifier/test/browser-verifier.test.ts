@@ -1,4 +1,4 @@
-import {describe,expect,it} from "vitest";import {deliveryErrors,verifyArtifact,verifyObservation,type BrowserObservation} from "../src/index";import {hashBytes,type ExportArtifact} from "@visual-architecture/exporter";
+import {describe,expect,it} from "vitest";import {deliveryErrors,verifyArtifact,verifyHtmlStructure,verifyObservation,type BrowserObservation} from "../src/index";import {hashBytes,type ExportArtifact} from "@visual-architecture/exporter";
 const good=(extra:Partial<BrowserObservation>={}):BrowserObservation=>({loaded:true,consoleErrors:[],viewport:{width:390,height:844},overflowX:false,overflowY:false,overlaps:[],brokenArrows:[],keyboardReachable:true,focusVisible:true,semanticLabels:true,contrastPass:true,reducedMotion:true,nonColorSemantics:true,interactions:{zoom:true,pan:true,fit:true,reset:true,search:true,focus:true,route:true,theme:true},screenshotHash:"shot",...extra});
 describe("G10 browser and accessibility verification",()=>{
  it("passes a complete observation",()=>expect(verifyObservation(good()).passed).toBe(true));
@@ -7,4 +7,5 @@ describe("G10 browser and accessibility verification",()=>{
  ] as const)("fails %s", (key,value,code)=>{const r=verifyObservation(good({[key]:value}));expect(r.passed).toBe(false);expect(r.diagnostics.map(d=>d.code)).toContain(code)});
  it("treats missing screenshot as evidence warning, not a false browser pass artifact",()=>{const r=verifyObservation(good({screenshotHash:undefined}));expect(r.diagnostics.map(d=>d.code)).toContain("VISUAL_SCREENSHOT_MISSING")});
  it("checks desktop and mobile viewports and exposes delivery vetoes",async()=>{const bytes=new TextEncoder().encode("<!doctype html><svg></svg>");const a:ExportArtifact={format:"html",mimeType:"text/html",bytes,hash:hashBytes(bytes),geometryHash:"g"};let calls=0;const reports=await verifyArtifact(a,{open:async(_h,v)=>{calls++;return good({viewport:v,contrastPass:v.width>400})}});expect(calls).toBe(2);expect(deliveryErrors(reports)).toContain("A11Y_CONTRAST_FAILED")});
+ it("structurally rejects externally dependent artifacts",()=>{const r=verifyHtmlStructure('<!doctype html><meta name="viewport"><script src="https://x"></script><svg></svg>');expect(r.errors).toContain("EXTERNAL_DEPENDENCY_FORBIDDEN")});
 });
