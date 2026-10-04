@@ -21,10 +21,10 @@ export interface DiagramIR {
   relationships:DiagramRelationship[]; boundaries:DiagramBoundary[]; evidence:Evidence[]; presentation:Presentation;
 }
 export type DiagnosticSeverity = "error"|"warning";
-export type DiagnosticStage = "schema"|"semantic"|"relationship"|"graph"|"layout"|"svg"|"artifact";
+export type DiagnosticStage = "schema"|"semantic"|"id"|"relationship"|"model"|"graph"|"layout"|"svg"|"artifact"|"delivery";
 export interface Diagnostic {
   stage:DiagnosticStage; code:string; severity:DiagnosticSeverity; subject?:string;
-  message:string; fixes?:string[]; path?:string;
+  message:string; fixes?:string[]; path?:string; context?:Record<string,unknown>;
 }
 export interface ValidationResult { valid:boolean; diagnostics:Diagnostic[]; normalized?:DiagramIR; }
 export function isDiagramKind(value:unknown):value is DiagramKind {
