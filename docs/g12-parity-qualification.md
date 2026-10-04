@@ -25,10 +25,10 @@ G12 is a certification gate. It does not add ordinary product features. A row is
 | Motion | G6 | reduced-motion browser evidence | PASS — 81f01d792c42c462d0eb9b946f696c2391933252; Qualification #113 / 37236314487 |
 | Repository analysis | G7 | analyzer hostile tests | PASS — 63e1435465b8e26cbf1be05eb3b82864f171a4a7; Qualification #124 / 37237116198 |
 | Evidence | G7 | revision-pinning tests | PASS — 63e1435465b8e26cbf1be05eb3b82864f171a4a7; Qualification #124 / 37237116198 |
-| HTML export | G8 | deterministic export tests | PENDING |
-| SVG export | G8 | deterministic export tests | PENDING |
-| PNG export | G8 | real raster artifact validation | PENDING |
-| WebP export | G8 | real raster artifact validation | PENDING |
+| HTML export | G8 | deterministic export + offline Chromium | PASS — 822eb2014fcb804c9468fa698daef371e9b33514; Qualification #137 / 37238262482 |
+| SVG export | G8 | structural validation + hostile content tests | PASS — 822eb2014fcb804c9468fa698daef371e9b33514; Qualification #137 / 37238262482 |
+| PNG export | G8 | Chromium raster + PNG signature/dimensions | PASS — 822eb2014fcb804c9468fa698daef371e9b33514; Qualification #137 / 37238262482 |
+| WebP export | G8 | Chromium raster + RIFF/WEBP/dimensions | PASS — 822eb2014fcb804c9468fa698daef371e9b33514; Qualification #137 / 37238262482 |
 | Atomic delivery | G9 | V1/invalid-V2/V3 tests | PENDING |
 | Preview | G9 | last-known-good verification | PENDING |
 | Browser verification | G10 | real browser run, console + screenshots | PENDING |
@@ -58,3 +58,8 @@ G6 qualified at `81f01d792c42c462d0eb9b946f696c2391933252` by Qualification Run 
 ## G7 qualification receipt
 
 G7 qualified at `63e1435465b8e26cbf1be05eb3b82864f171a4a7` by Qualification Run #124 (`37237116198`). Install/bootstrap, Chromium provisioning, typecheck and `pnpm check` passed. Workspace regression: 130/130 tests across 15 files, including 13/13 analyzer tests, 5/5 evidence tests and the existing 2/2 real-Chromium G6 tests. Evidence covers revision-pinned repository/file/range/blob/content identity; VERIFIED/INFERRED/USER_SUPPLIED/UNKNOWN separation; deterministic confidence rules; exact CRLF/Unicode ranges; content-tamper checks; runtime/development/workspace dependency separation; TypeScript/JavaScript/Python/Go/Rust/Java detection; multi-project manifests; conventional entry-point inference; static import relationship evidence; runtime/storage/security/provider signals without claiming observed traffic; generated/vendor exclusion; secret excerpt redaction; malformed/unsupported diagnostics; path/symlink/resource-limit rejection; deterministic enumeration; no execution of repository-authored code; and repository → evidence → typed architecture IR → G2 validation → G4 layout → G5 render → G6 self-contained viewer integration.
+
+
+## G8 qualification receipt
+
+G8 qualified at `822eb2014fcb804c9468fa698daef371e9b33514` by Qualification Run #137 (`37238262482`). Install/bootstrap, Chromium provisioning, typecheck and `pnpm check` passed. Workspace regression: 147/147 tests across 16 files. G8 exporter qualification: 22/22 tests. Real Chromium export qualification: 2/2, while the permanent G6 real Chromium regression remained 2/2 PASS. Evidence includes real PNG and WebP bytes generated from trusted G5 SVG in Chromium; independent PNG signature/IHDR dimensions and RIFF/WEBP VP8X validation; five-model SVG/HTML/PNG/WebP export; deterministic SVG/HTML; standalone viewer execution with no observed HTTP(S) requests, console or page errors; zoom/search/focus/route/lens/theme/deep-link interaction; multilingual and multiline text; light/dark semantics; explicit dimensions/resource limits; 100-node vector stress export; safe filenames; hostile authored-content escaping; clipboard success/unavailable behavior; share payload/invocation/unsupported behavior; and mobile/touch raster/browser capability qualification. Native OS share-sheet completion is intentionally not fabricated.
