@@ -1,0 +1,8 @@
+import {describe,expect,it} from "vitest";import type {ExportArtifact} from "@visual-architecture/exporter";import {hashBytes} from "@visual-architecture/exporter";import {deliverAtomic,MemoryDeliveryStore} from "../src/index";
+const make=(text:string):ExportArtifact=>{const bytes=new TextEncoder().encode(text);return{format:"html",mimeType:"text/html",bytes,hash:hashBytes(bytes),geometryHash:"geo"}};
+describe("G9 atomic delivery",()=>{
+ it("promotes a valid candidate atomically",async()=>{const s=new MemoryDeliveryStore(),a=make("<!doctype html><svg></svg>");const r=await deliverAtomic("preview",{v:1},a,s);expect(r.accepted).toBe(true);expect((await s.readGood("preview"))?.hash).toBe(a.hash)});
+ it("preserves last-known-good when candidate fails",async()=>{const s=new MemoryDeliveryStore(),v1=make("<!doctype html><svg></svg>");await deliverAtomic("preview",{v:1},v1,s);const bad=make("broken");const r=await deliverAtomic("preview",{v:2},bad,s);expect(r.accepted).toBe(false);expect((await s.readGood("preview"))?.hash).toBe(v1.hash);expect(s.candidate.has("preview")).toBe(false)});
+ it("does not replace good artifact when external verification fails",async()=>{const s=new MemoryDeliveryStore(),v1=make("<!doctype html><svg></svg>");await deliverAtomic("preview",{v:1},v1,s);const v2=make("<!doctype html><svg><title>v2</title></svg>");await deliverAtomic("preview",{v:2},v2,s,async()=>["BROWSER_VERIFY_FAILED"]);expect((await s.readGood("preview"))?.hash).toBe(v1.hash)});
+ it("returns specification and artifact hashes",async()=>{const s=new MemoryDeliveryStore(),a=make("<!doctype html><svg></svg>");const r=await deliverAtomic("preview",{v:1},a,s);expect(r.specificationHash).toMatch(/^[0-9a-f]{8}$/);expect(r.artifactHash).toBe(a.hash)});
+});
