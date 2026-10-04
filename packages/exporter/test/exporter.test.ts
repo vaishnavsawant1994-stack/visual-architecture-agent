@@ -1,0 +1,10 @@
+import {describe,expect,it} from "vitest";import type {DiagramIR} from "@visual-architecture/ir";import {layoutDiagram} from "@visual-architecture/layout";import {copyArtifact,exportHtml,exportRaster,exportSvg,shareArtifact,validateExport} from "../src/index";
+const ir:DiagramIR={version:"1.0",kind:"architecture",document:{title:"Export"},nodes:[{id:"api",type:"component",label:"API"}],relationships:[],boundaries:[],evidence:[],presentation:{}};
+describe("G8 export",()=>{const l=layoutDiagram(ir);
+ it("exports deterministic standalone SVG",()=>{const a=exportSvg(ir,l),b=exportSvg(ir,l);expect(a.hash).toBe(b.hash);expect(validateExport(a)).toEqual([])});
+ it("exports deterministic self-contained HTML",()=>{const a=exportHtml(ir,l);expect(validateExport(a)).toEqual([]);expect(new TextDecoder().decode(a.bytes)).toContain("<svg")});
+ it.each(["png","webp"] as const)("supports %s through an isolated rasterizer",async format=>{const a=await exportRaster(ir,l,format,{rasterize:async(_s,_w,_h,f)=>new TextEncoder().encode(`${f}:pixels`)});expect(a.format).toBe(format);expect(validateExport(a)).toEqual([])});
+ it("copies text artifacts",async()=>{let copied="";await copyArtifact(exportSvg(ir,l),{writeText:async s=>{copied=s}});expect(copied).toContain("<svg")});
+ it("exposes share-image/file surface",async()=>{let name="";await shareArtifact(exportSvg(ir,l),async d=>{name=d.files[0]!.name});expect(name).toBe("diagram.svg")});
+ it("detects tampering",()=>{const a=exportSvg(ir,l);a.bytes=new TextEncoder().encode("bad");expect(validateExport(a)).toContain("EXPORT_HASH_MISMATCH")});
+});
