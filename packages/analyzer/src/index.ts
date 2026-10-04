@@ -14,7 +14,7 @@ const MAX_FILES=5000,MAX_BYTES=1_000_000,MAX_DEPTH=40;
 const safeId=(s:string)=>s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,80)||"module";
 const lines=(s:string)=>s.replace(/\r\n/g,"\n").split("\n");
 const lineOf=(content:string,needle:string)=>{const ls=lines(content);const i=ls.findIndex(x=>x.includes(needle));return i<0?1:i+1};
-const source=(s:RepositorySnapshot,f:RepositoryFile,lineStart:number,lineEnd=lineStart):SourceRange=>({repository:s.repository,commitSha:s.commitSha,file:f.path,lineStart,lineEnd,blobSha:f.blobSha,contentHash:f.contentHash,excerpt:lines(f.content).slice(lineStart-1,lineEnd).join("\n").slice(0,300)});
+const source=(s:RepositorySnapshot,f:RepositoryFile,lineStart:number,lineEnd=lineStart):SourceRange=>({repository:s.repository,commitSha:s.commitSha,file:f.path,lineStart,lineEnd,blobSha:f.blobSha,contentHash:f.contentHash,excerpt:redact(lines(f.content).slice(lineStart-1,lineEnd).join("\n")).slice(0,300)});
 const finding=(s:RepositorySnapshot,f:RepositoryFile,id:string,kind:string,label:string,classification:EvidenceClassification,confidence:number,line=1,metadata?:Record<string,unknown>):Finding=>({id,kind,label,classification,confidence,source:source(s,f,line),...(metadata?{metadata}:{})});
 const stripComments=(c:string)=>c.replace(/\/\*[\s\S]*?\*\//g,"").replace(/(^|\s)\/\/.*$/gm,"$1").replace(/^\s*#.*$/gm,"");
 const redact=(s:string)=>s.replace(/((?:api[_-]?key|token|password|secret|private[_-]?key)\s*[:=]\s*)[^\s,;"']+/gi,"$1[REDACTED]").replace(/(postgres(?:ql)?:\/\/)[^@\s]+@/gi,"$1[REDACTED]@");
@@ -42,7 +42,7 @@ export function analyzeRepository(snapshot:RepositorySnapshot):Analysis{
   for(const [re,kind,label,confidence] of signals){const m=safe.match(re);if(m){const ln=lineOf(safe,m[0]);const item=finding(snapshot,f,`${kind}-${safeId(f.path)}-${ln}`,kind,label,"INFERRED",confidence,ln,{reason:`${kind}-static-signal`});(kind==="security"?security:runtime).push(item)}}
   if(/\.(env|pem|key)$/.test(f.path))diagnostics.push({code:"SENSITIVE_FILE_REDACTED",severity:"warning",file:f.path,message:"Sensitive file excluded from evidence excerpts"});
  }
- for(const f of usable)if(!Object.values(extLanguage).some(l=>languages.has(l))&&/\.[a-z0-9]+$/i.test(f.path)&&!/(json|md|yml|yaml|toml|lock)$/.test(f.path))diagnostics.push({code:"UNSUPPORTED_LANGUAGE",severity:"warning",file:f.path,message:"Source language is not supported"});
+ for(const f of usable){const suffix=f.path.match(/(\\.[a-z0-9]+)$/i)?.[1]?.toLowerCase();if(suffix&&!extLanguage[suffix]&&![".json",".md",".yml",".yaml",".toml",".lock",".env",".pem",".key",".xml"].includes(suffix))diagnostics.push({code:"UNSUPPORTED_LANGUAGE",severity:"warning",file:f.path,message:"Source language is not supported"});}
  const all=[...entryPoints,...modules,...runtime,...security,...relationships].sort((a,b)=>a.id.localeCompare(b.id));
  return{languages:[...languages].sort(),dependencies:[...new Set(deps.map(d=>d.name))].sort(),dependencyRecords:deps.sort((a,b)=>[a.file,a.scope,a.name].join(":").localeCompare([b.file,b.scope,b.name].join(":"))),projects:projects.sort((a,b)=>a.root.localeCompare(b.root)),entryPoints,modules,runtime,security,relationships,diagnostics:diagnostics.sort((a,b)=>[a.code,a.file??""].join(":").localeCompare([b.code,b.file??""].join(":"))),findings:all};
 }
