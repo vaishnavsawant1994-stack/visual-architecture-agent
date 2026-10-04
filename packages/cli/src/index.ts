@@ -32,7 +32,7 @@ export async function runCommand(command:Command,c:CommandContext={}):Promise<un
  case"inspect":if(!c.ir)throw Error("IR_REQUIRED");return{kind:c.ir.kind,nodes:c.ir.nodes.length,relationships:c.ir.relationships.length,boundaries:c.ir.boundaries.length,evidence:c.ir.evidence.length,title:c.ir.document.title};
  case"render":if(!c.ir)throw Error("IR_REQUIRED");{const v=validatePipeline(c.ir);if(!v.valid)throw Error("IR_INVALID");return renderDiagram(c.ir,layoutDiagram(c.ir))}
  case"preview":if(!c.ir)throw Error("IR_REQUIRED");{const v=validatePipeline(c.ir);if(!v.valid)throw Error("IR_INVALID");return createSelfContainedHtml(c.ir,layoutDiagram(c.ir))}
- case"deliver":if(!c.ir||!c.deliveryStore)throw Error("IR_DELIVERY_STORE_REQUIRED");{const candidate=c.candidate??exportHtml(c.ir,layoutDiagram(c.ir));return deliverAtomic(c.deliveryKey??"default",c.ir,candidate,c.deliveryStore)}
+ case"deliver":if(!c.ir||!c.deliveryStore)throw Error("IR_DELIVERY_STORE_REQUIRED");{const v=validatePipeline(c.ir);if(!v.valid)throw Error("IR_INVALID");const candidate=c.candidate??exportHtml(c.ir,layoutDiagram(c.ir));return deliverAtomic(c.deliveryKey??"default",c.ir,candidate,c.deliveryStore)}
  case"compare":if(!c.before||!c.after)throw Error("BEFORE_AFTER_REQUIRED");return compareIR(c.before,c.after);
  case"export":if(!c.ir)throw Error("IR_REQUIRED");{const format=c.format??"html";return exportDiagram({format,document:c.ir,layout:layoutDiagram(c.ir),...(c.rasterizer?{rasterizer:c.rasterizer}:{})})}
  case"verify":if(!c.ir)throw Error("IR_REQUIRED");{const a=exportHtml(c.ir,layoutDiagram(c.ir));return{artifactErrors:validateExport(a),structure:verifyHtmlStructure(new TextDecoder().decode(a.bytes))}}
