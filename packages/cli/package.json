@@ -23,11 +23,13 @@
     "@visual-architecture/layout": "workspace:*",
     "@visual-architecture/renderer": "workspace:*",
     "@visual-architecture/validator": "workspace:*",
-    "@visual-architecture/viewer-runtime": "workspace:*"
+    "@visual-architecture/viewer-runtime": "workspace:*",
+    "@visual-architecture/delivery": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.2",
     "vitest": "^3.2.4",
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "@playwright/test": "^1.55.0"
   }
 }
