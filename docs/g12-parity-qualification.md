@@ -25,10 +25,10 @@ G12 is a certification gate. It does not add ordinary product features. A row is
 | Motion | G6 | reduced-motion browser evidence | PASS — 81f01d792c42c462d0eb9b946f696c2391933252; Qualification #113 / 37236314487 |
 | Repository analysis | G7 | analyzer hostile tests | PASS — 63e1435465b8e26cbf1be05eb3b82864f171a4a7; Qualification #124 / 37237116198 |
 | Evidence | G7 | revision-pinning tests | PASS — 63e1435465b8e26cbf1be05eb3b82864f171a4a7; Qualification #124 / 37237116198 |
-| HTML export | G8 | deterministic export + offline Chromium | PASS — 822eb2014fcb804c9468fa698daef371e9b33514; Qualification #137 / 37238262482 |
-| SVG export | G8 | structural validation + hostile content tests | PASS — 822eb2014fcb804c9468fa698daef371e9b33514; Qualification #137 / 37238262482 |
-| PNG export | G8 | Chromium raster + PNG signature/dimensions | PASS — 822eb2014fcb804c9468fa698daef371e9b33514; Qualification #137 / 37238262482 |
-| WebP export | G8 | Chromium raster + RIFF/WEBP/dimensions | PASS — 822eb2014fcb804c9468fa698daef371e9b33514; Qualification #137 / 37238262482 |
+| HTML export | G8 | deterministic export + offline Chromium + viewer download | PASS — 3431a54e1f3f9297131d978fa61693defa522a94; Qualification #147 / 37239294476 |
+| SVG export | G8 | structural validation + hostile content + viewer download | PASS — 3431a54e1f3f9297131d978fa61693defa522a94; Qualification #147 / 37239294476 |
+| PNG export | G8 | Chromium raster + decode/content/stress + viewer download | PASS — 3431a54e1f3f9297131d978fa61693defa522a94; Qualification #147 / 37239294476 |
+| WebP export | G8 | Chromium raster + decode/content/stress + viewer download | PASS — 3431a54e1f3f9297131d978fa61693defa522a94; Qualification #147 / 37239294476 |
 | Atomic delivery | G9 | V1/invalid-V2/V3 tests | PENDING |
 | Preview | G9 | last-known-good verification | PENDING |
 | Browser verification | G10 | real browser run, console + screenshots | PENDING |
@@ -62,4 +62,6 @@ G7 qualified at `63e1435465b8e26cbf1be05eb3b82864f171a4a7` by Qualification Run 
 
 ## G8 qualification receipt
 
-G8 qualified at `822eb2014fcb804c9468fa698daef371e9b33514` by Qualification Run #137 (`37238262482`). Install/bootstrap, Chromium provisioning, typecheck and `pnpm check` passed. Workspace regression: 147/147 tests across 16 files. G8 exporter qualification: 22/22 tests. Real Chromium export qualification: 2/2, while the permanent G6 real Chromium regression remained 2/2 PASS. Evidence includes real PNG and WebP bytes generated from trusted G5 SVG in Chromium; independent PNG signature/IHDR dimensions and RIFF/WEBP VP8X validation; five-model SVG/HTML/PNG/WebP export; deterministic SVG/HTML; standalone viewer execution with no observed HTTP(S) requests, console or page errors; zoom/search/focus/route/lens/theme/deep-link interaction; multilingual and multiline text; light/dark semantics; explicit dimensions/resource limits; 100-node vector stress export; safe filenames; hostile authored-content escaping; clipboard success/unavailable behavior; share payload/invocation/unsupported behavior; and mobile/touch raster/browser capability qualification. Native OS share-sheet completion is intentionally not fabricated.
+G8 qualified at `3431a54e1f3f9297131d978fa61693defa522a94` by Qualification Run #147 (`37239294476`). Install/bootstrap, Chromium provisioning, all package typechecks and `pnpm check` passed. Workspace regression: 151/151 tests across 16 files. G8 exporter qualification: 24/24. Browser-verifier: 20/20 across three files. Real G8 Chromium qualification: 4/4; permanent G6 real Chromium regression: 2/2.
+
+Evidence covers real SVG and standalone HTML; zero observed HTTP(S) requests in offline standalone qualification; genuine PNG/WebP; five-model export; viewer HTML/SVG/PNG/WebP controls wired through the exporter-authored bridge to the trusted G5 SVG; browser-captured downloads with MIME blob observation, safe filenames, nonzero content and independent artifact validation; decoded raster dimensions and pixel variation; genuinely wide, tall and nested-container fixtures with distributed non-background content and PNG/WebP region consistency; multilingual/multiline and light/dark coverage; explicit dimensions/resource limits; hostile authored-content escaping; controlled environment/path/credential metadata-leak sentinels; clipboard success, unavailable, permission-denied and unsupported-MIME behavior; share payload/invocation/unsupported behavior; and full G0–G7 regression preservation. Native OS share-sheet completion is not fabricated.
