@@ -23,8 +23,8 @@ This register is falsification evidence. A gap remains open until executable qua
 | G8 PNG/WebP | interface/mock tests only; real raster qualification absent | FAIL |
 | G8 Clipboard/share | programmatic surfaces exist; real browser qualification absent | OPEN |
 | G9 Atomic delivery | PASS — hardened candidate-first delivery, last-known-good preservation, staged integrity/tamper detection, cleanup/error handling and canonical specification hashing | PASS — implementation `db1342436f955f4e3fbdfe7b589bd2f0348958ab`; Qualification #151 / Run ID `37242650232` SUCCESS |
-| G10 Browser | verifier contract exists; no real browser evidence/screenshot run recorded | FAIL |
-| G10 Accessibility | contract checks exist; no real keyboard/contrast/browser evidence recorded | FAIL |
+| G10 Browser | PASS — all five models exercised in real Chromium across desktop/laptop/tablet/mobile portrait/mobile landscape, including touch, interactions, deep-link restoration, console/page-error checks and screenshot receipts | PASS — `154ccc827627a2f06be48442a231837d7776b393`; Qualification #153 / Run ID `37243245414` SUCCESS |
+| G10 Accessibility | PASS — keyboard-only focus order/activation, visible focus, semantic labels, reduced-motion behavior and non-color relationship metadata qualified with existing automated contrast diagnostics retained | PASS — Qualification #153 / Run ID `37243245414` SUCCESS |
 | G11 CLI | command dispatcher exists; executable CLI currently only prints command name and does not execute command workflows | FAIL |
 | G11 Compare | added/removed nodes/relationships only; changed boundaries/evidence incomplete | FAIL |
 | G11 Agent adapters | four semantic adapters exist | PENDING EXECUTION |
