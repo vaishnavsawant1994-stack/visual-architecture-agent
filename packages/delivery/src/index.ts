@@ -5,8 +5,8 @@ export function specificationHash(spec:unknown):string{return hashBytes(new Text
 export async function deliverAtomic(key:string,spec:unknown,candidate:ExportArtifact,store:DeliveryStore,extraValidate:(a:ExportArtifact)=>Promise<string[]>=async()=>[]):Promise<DeliveryRecord>{
  const previous=await store.readGood(key);await store.writeCandidate(key,candidate);
  const errors=[...validateExport(candidate),...await extraValidate(candidate)];
- if(errors.length){await store.discardCandidate(key);return{accepted:false,specificationHash:specificationHash(spec),artifactHash:candidate.hash,previousArtifactHash:previous?.hash,errors}}
- await store.promoteCandidate(key);return{accepted:true,specificationHash:specificationHash(spec),artifactHash:candidate.hash,previousArtifactHash:previous?.hash,errors:[]};
+ if(errors.length){await store.discardCandidate(key);return{accepted:false,specificationHash:specificationHash(spec),artifactHash:candidate.hash,...(previous?{previousArtifactHash:previous.hash}:{}),errors}}
+ await store.promoteCandidate(key);return{accepted:true,specificationHash:specificationHash(spec),artifactHash:candidate.hash,...(previous?{previousArtifactHash:previous.hash}:{}),errors:[]};
 }
 export class MemoryDeliveryStore implements DeliveryStore{
  good=new Map<string,ExportArtifact>();candidate=new Map<string,ExportArtifact>();
