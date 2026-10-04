@@ -5,7 +5,7 @@ import {layoutDiagram} from "@visual-architecture/layout";
 import {renderDiagram,renderers,validateRenderResult,validateSvg} from "../src/index";
 
 const base=(kind:DiagramKind):DiagramIR=>({version:"1.0",kind,document:{title:"Qualification",description:"G5 semantic SVG"},nodes:[],relationships:[],boundaries:[],evidence:[],presentation:{preset:"classic",theme:"light"}});
-const xml=(s:string)=>{const d=new DOMParser({onError:()=>{}}).parseFromString(s,"image/svg+xml");expect(d.documentElement.tagName).toBe("svg");expect(d.getElementsByTagName("parsererror").length).toBe(0);return d};
+const xml=(s:string)=>{const d=new DOMParser().parseFromString(s,"image/svg+xml");expect(d.documentElement.tagName).toBe("svg");expect(d.getElementsByTagName("parsererror").length).toBe(0);return d};
 const render=(ir:DiagramIR)=>{const l=layoutDiagram(ir),r=renderDiagram(ir,l);expect(validateRenderResult(r,ir.kind,l.geometryHash)).toEqual([]);xml(r.svg);return{l,r,d:xml(r.svg)}};
 const by=(d:Document,attr:string,value?:string)=>Array.from(d.getElementsByTagName("*")).filter(x=>x.hasAttribute(attr)&&(value===undefined||x.getAttribute(attr)===value));
 
