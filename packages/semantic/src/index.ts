@@ -1,74 +1,14 @@
-import type { Diagnostic, DiagramIR, DiagramKind } from "@visual-architecture/ir";
-
-export type SemanticEngine = { kind: DiagramKind; validate(ir: DiagramIR): Diagnostic[] };
-
-const error=(code:string,subject:string,message:string):Diagnostic=>({stage:"semantic",code,severity:"error",subject,message});
-const nodeTypes=(ir:DiagramIR)=>new Set(ir.nodes.map(n=>n.type));
-const relationshipTypes=(ir:DiagramIR)=>new Set(ir.relationships.map(r=>r.type));
-
-export const architectureEngine:SemanticEngine={
- kind:"architecture",
- validate(ir){
-  const out:Diagnostic[]=[];
-  if(ir.nodes.length===0) out.push(error("ARCHITECTURE_EMPTY","nodes","Architecture requires at least one component."));
-  for(const b of ir.boundaries) for(const id of b.nodeIds??[]) if(!ir.nodes.some(n=>n.id===id)) out.push(error("ARCHITECTURE_BOUNDARY_NODE_MISSING",b.id,`Boundary references missing node "${id}".`));
-  return out;
- }
-};
-
-export const workflowEngine:SemanticEngine={
- kind:"workflow",
- validate(ir){
-  const out:Diagnostic[]=[];
-  const allowed=new Set(["step","decision","start","end","lane","phase"]);
-  for(const n of ir.nodes) if(!allowed.has(n.type)) out.push(error("WORKFLOW_NODE_TYPE_INVALID",n.id,`Workflow node type "${n.type}" is not valid.`));
-  if(!nodeTypes(ir).has("start")) out.push(error("WORKFLOW_START_MISSING","nodes","Workflow requires a start node."));
-  return out;
- }
-};
-
-export const sequenceEngine:SemanticEngine={
- kind:"sequence",
- validate(ir){
-  const out:Diagnostic[]=[];
-  const allowedRelations=new Set(["message","reply","async-message","create","destroy"]);
-  for(const r of ir.relationships) if(!allowedRelations.has(r.type)) out.push(error("SEQUENCE_MESSAGE_TYPE_INVALID",r.id,`Sequence relationship type "${r.type}" is not valid.`));
-  if(ir.nodes.length<2) out.push(error("SEQUENCE_PARTICIPANTS_INSUFFICIENT","nodes","Sequence requires at least two participants."));
-  return out;
- }
-};
-
-export const dataFlowEngine:SemanticEngine={
- kind:"data-flow",
- validate(ir){
-  const out:Diagnostic[]=[];
-  const allowedNodes=new Set(["source","process","store","destination","stage"]);
-  for(const n of ir.nodes) if(!allowedNodes.has(n.type)) out.push(error("DATA_FLOW_NODE_TYPE_INVALID",n.id,`Data-flow node type "${n.type}" is not valid.`));
-  for(const r of ir.relationships) if(r.type!=="flow") out.push(error("DATA_FLOW_RELATION_TYPE_INVALID",r.id,"Data-flow relationships must use type flow."));
-  return out;
- }
-};
-
-export const lifecycleEngine:SemanticEngine={
- kind:"lifecycle",
- validate(ir){
-  const out:Diagnostic[]=[];
-  const states=new Set(["START","ACTIVE","WAITING","RETRYING","FAILED","CANCELLED","COMPLETED"]);
-  for(const n of ir.nodes) if(n.type!=="state" || typeof n.metadata?.state!=="string" || !states.has(n.metadata.state)) out.push(error("LIFECYCLE_STATE_INVALID",n.id,"Lifecycle nodes must be state nodes with a recognized metadata.state."));
-  if(!ir.nodes.some(n=>n.metadata?.state==="START")) out.push(error("LIFECYCLE_START_MISSING","nodes","Lifecycle requires START."));
-  return out;
- }
-};
-
-export const semanticEngines:Record<DiagramKind,SemanticEngine>={
- architecture:architectureEngine,workflow:workflowEngine,sequence:sequenceEngine,"data-flow":dataFlowEngine,lifecycle:lifecycleEngine
-};
-
-export function validateSemantics(ir:DiagramIR):Diagnostic[]{
- return semanticEngines[ir.kind].validate(ir);
-}
-
-export function compileSemanticGraph(ir:DiagramIR){
- const diagnostics=validateSemantics(ir);
- return {kind:ir.kind,nodes:ir.nodes,relationships:ir.relationships,boundaries:ir.boundaries,diagnostics,valid:!diagnostics.some(d=>d.severity==="error")};
-}
+import type {Diagnostic,DiagramIR,DiagramKind,DiagramNode} from "@visual-architecture/ir";
+export type SemanticEngine={kind:DiagramKind;validate(ir:DiagramIR):Diagnostic[]};
+const error=(code:string,subject:string,message:string,context?:Record<string,unknown>):Diagnostic=>({stage:"semantic",code,severity:"error",subject,message,context});
+const types=(ir:DiagramIR,t:string)=>ir.nodes.filter(n=>n.type===t);
+const hasMeta=(n:DiagramNode,k:string)=>n.metadata?.[k]!==undefined;
+const boundaryChecks=(ir:DiagramIR)=>{const out:Diagnostic[]=[];const ns=new Set(ir.nodes.map(n=>n.id)),bs=new Set(ir.boundaries.map(b=>b.id));for(const b of ir.boundaries){for(const n of b.nodeIds??[])if(!ns.has(n))out.push(error("BOUNDARY_NODE_MISSING",b.id,"Boundary references a missing node.",{nodeId:n}));for(const x of b.boundaryIds??[])if(!bs.has(x)||x===b.id)out.push(error("BOUNDARY_NESTING_INVALID",b.id,"Boundary nesting reference is invalid.",{boundaryId:x}))}return out};
+export const architectureEngine:SemanticEngine={kind:"architecture",validate(ir){const out=boundaryChecks(ir);if(!ir.nodes.length)out.push(error("ARCHITECTURE_EMPTY","nodes","Architecture requires at least one component."));const allowed=new Set(["component","service","runtime","external","store","database","queue","agent","model","tool","trust","group"]);for(const n of ir.nodes)if(!allowed.has(n.type))out.push(error("ARCHITECTURE_ROLE_INVALID",n.id,"Unsupported architecture semantic role."));return out}};
+export const workflowEngine:SemanticEngine={kind:"workflow",validate(ir){const out=boundaryChecks(ir),allowed=new Set(["start","end","step","decision","approval","retry","lane","phase","group"]);for(const n of ir.nodes)if(!allowed.has(n.type))out.push(error("WORKFLOW_NODE_TYPE_INVALID",n.id,"Unsupported workflow node type."));if(types(ir,"start").length!==1)out.push(error("WORKFLOW_START_INVALID","nodes","Workflow requires exactly one start."));if(!types(ir,"end").length)out.push(error("WORKFLOW_END_MISSING","nodes","Workflow requires an end."));const mains=ir.relationships.filter(r=>r.metadata?.mainPath===true);if(ir.relationships.length&&!mains.length)out.push(error("WORKFLOW_MAIN_PATH_MISSING","relationships","Workflow with edges must identify a main path."));return out}};
+export const sequenceEngine:SemanticEngine={kind:"sequence",validate(ir){const out:Diagnostic[]=[];if(ir.nodes.length<2)out.push(error("SEQUENCE_PARTICIPANTS_INSUFFICIENT","nodes","Sequence requires at least two participants."));for(const n of ir.nodes)if(n.type!=="participant")out.push(error("SEQUENCE_PARTICIPANT_INVALID",n.id,"Sequence nodes must be participants."));const allowed=new Set(["message","reply","async-message","create","destroy"]);let last=-Infinity;for(const r of ir.relationships){if(!allowed.has(r.type))out.push(error("SEQUENCE_MESSAGE_TYPE_INVALID",r.id,"Unsupported sequence message type."));const order=Number(r.metadata?.order);if(!Number.isFinite(order))out.push(error("SEQUENCE_ORDER_MISSING",r.id,"Messages require numeric temporal order."));else if(order<=last)out.push(error("SEQUENCE_ORDER_INVALID",r.id,"Message order must strictly increase."));else last=order}for(const n of ir.nodes)if(hasMeta(n,"activationStart")!==hasMeta(n,"activationEnd"))out.push(error("SEQUENCE_ACTIVATION_INVALID",n.id,"Activation requires both start and end."));return out}};
+export const dataFlowEngine:SemanticEngine={kind:"data-flow",validate(ir){const out=boundaryChecks(ir),allowed=new Set(["source","process","processor","store","destination","stage"]);for(const n of ir.nodes)if(!allowed.has(n.type))out.push(error("DATA_FLOW_NODE_TYPE_INVALID",n.id,"Unsupported data-flow role."));for(const r of ir.relationships)if(r.type!=="flow")out.push(error("DATA_FLOW_RELATION_TYPE_INVALID",r.id,"Data-flow relationships must use flow."));if(!types(ir,"source").length)out.push(error("DATA_FLOW_SOURCE_MISSING","nodes","Data flow requires a source."));if(!types(ir,"destination").length)out.push(error("DATA_FLOW_DESTINATION_MISSING","nodes","Data flow requires a destination."));return out}};
+export const lifecycleEngine:SemanticEngine={kind:"lifecycle",validate(ir){const out=boundaryChecks(ir),states=new Set(["START","ACTIVE","WAITING","RETRYING","FAILED","CANCELLED","COMPLETED"]),terminal=new Set(["FAILED","CANCELLED","COMPLETED"]);for(const n of ir.nodes)if(n.type!=="state"||typeof n.metadata?.state!=="string"||!states.has(String(n.metadata.state)))out.push(error("LIFECYCLE_STATE_INVALID",n.id,"Lifecycle node must contain a recognized state."));if(ir.nodes.filter(n=>n.metadata?.state==="START").length!==1)out.push(error("LIFECYCLE_START_INVALID","nodes","Lifecycle requires exactly one START."));for(const r of ir.relationships){const src=ir.nodes.find(n=>n.id===r.source);if(src&&terminal.has(String(src.metadata?.state)))out.push(error("LIFECYCLE_TERMINAL_OUTGOING",r.id,"Terminal states cannot have outgoing transitions."));if(r.type!=="transition")out.push(error("LIFECYCLE_TRANSITION_INVALID",r.id,"Lifecycle edges must be transitions."))}return out}};
+export const semanticEngines:Record<DiagramKind,SemanticEngine>={architecture:architectureEngine,workflow:workflowEngine,sequence:sequenceEngine,"data-flow":dataFlowEngine,lifecycle:lifecycleEngine};
+export function validateSemantics(ir:DiagramIR):Diagnostic[]{return semanticEngines[ir.kind].validate(ir)}
+export function compileSemanticGraph(ir:DiagramIR){const diagnostics=validateSemantics(ir);return{kind:ir.kind,nodes:ir.nodes,relationships:ir.relationships,boundaries:ir.boundaries,diagnostics,valid:!diagnostics.some(d=>d.severity==="error")}}
