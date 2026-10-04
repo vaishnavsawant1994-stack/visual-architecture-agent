@@ -7,7 +7,7 @@ export interface Analysis{languages:string[];dependencies:string[];entryPoints:F
 
 const extLanguage:Record<string,string>={".ts":"TypeScript",".tsx":"TypeScript",".js":"JavaScript",".jsx":"JavaScript",".py":"Python",".go":"Go",".rs":"Rust",".java":"Java",".kt":"Kotlin",".rb":"Ruby",".php":"PHP",".cs":"C#"};
 const source=(s:RepositorySnapshot,f:RepositoryFile,lineStart=1,lineEnd=1):SourceRange=>({repository:s.repository,commitSha:s.commitSha,file:f.path,lineStart,lineEnd,blobSha:f.blobSha,contentHash:f.contentHash,excerpt:f.content.split("\n").slice(lineStart-1,lineEnd).join("\n").slice(0,300)});
-const finding=(s:RepositorySnapshot,f:RepositoryFile,id:string,kind:string,label:string,classification:EvidenceClassification,confidence:number,metadata?:Record<string,unknown>):Finding=>({id,kind,label,classification,confidence,source:source(s,f),metadata});
+const finding=(s:RepositorySnapshot,f:RepositoryFile,id:string,kind:string,label:string,classification:EvidenceClassification,confidence:number,metadata?:Record<string,unknown>):Finding=>({id,kind,label,classification,confidence,source:source(s,f),...(metadata===undefined?{}:{metadata})});
 const safeId=(s:string)=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,80)||"module";
 
 export function analyzeRepository(snapshot:RepositorySnapshot):Analysis{
