@@ -51,7 +51,7 @@ export function parseDeepLink(hash:string,state:ViewerState=DEFAULT_STATE):Viewe
 export function serializeDeepLink(state:ViewerState):string{
  const p=new URLSearchParams();if(state.nodeId)p.set("node",state.nodeId);if(state.relationId)p.set("relation",state.relationId);if(state.route)p.set("route",state.route.join(":"));if(state.lens)p.set("lens",state.lens);return p.size?`#${p.toString()}`:"";
 }
-const escapeScript=(s:string)=>s.replace(/<\\/script/gi,"<\\\\/script");
+const escapeScript=(s:string)=>s.replace(/<\/script/gi,"<\\/script");
 const htmlEsc=(s:string)=>s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
 const I18N={
  en:{controls:"Diagram controls",zoomIn:"Zoom in",zoomOut:"Zoom out",fit:"Fit",reset:"Reset",overview:"Overview",fullscreen:"Fullscreen",search:"Search diagram",focus:"Focus",upstream:"Upstream",downstream:"Downstream",route:"Route",inspect:"Inspection",lens:"Lens"},
