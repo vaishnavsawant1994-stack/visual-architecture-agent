@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateDiagramIR } from "../src/index";
+import { validateDiagramIR, validatePipeline } from "../src/index";
 
 const valid = {
   version:"1.0",
@@ -52,4 +52,13 @@ describe("Typed IR hostile validation",()=>{
     expect(result.valid).toBe(false);
     expect(result.diagnostics.some(d=>d.code==="RELATION_TARGET_MISSING")).toBe(true);
   });
+});
+
+describe("G2 staged qualification",()=>{
+ it("qualifies a valid candidate through delivery",()=>{const r=validatePipeline(valid);expect(r.deliveryEligible).toBe(true);expect(Object.keys(r.stages)).toEqual(expect.arrayContaining(["schema","id","relationship","model","graph","layout","svg","artifact","delivery"]))});
+ it("rejects non-durable IDs",()=>{const r=validatePipeline({...valid,nodes:[{...valid.nodes[0],id:"Agent Runtime"},valid.nodes[1]],relationships:[]});expect(r.deliveryEligible).toBe(false);expect(r.diagnostics.some(d=>d.code==="DURABLE_ID_INVALID")).toBe(true)});
+ it("rejects missing evidence references",()=>{const r=validatePipeline({...valid,nodes:[{...valid.nodes[0],evidenceIds:["missing"]},valid.nodes[1]]});expect(r.diagnostics.some(d=>d.code==="EVIDENCE_REFERENCE_MISSING")).toBe(true)});
+ it("rejects invalid boundary references",()=>{const r=validatePipeline({...valid,boundaries:[{id:"outer",type:"trust",label:"Outer",boundaryIds:["outer"]}]});expect(r.diagnostics.some(d=>d.code==="BOUNDARY_REFERENCE_INVALID")).toBe(true)});
+ it("fails model-invalid candidates",()=>{const r=validatePipeline({...valid,kind:"workflow",nodes:[{id:"step-one",type:"step",label:"Step"}],relationships:[]});expect(r.diagnostics.some(d=>d.stage==="model")).toBe(true);expect(r.deliveryEligible).toBe(false)});
+ it("never silently accepts hostile unknown content",()=>{const r=validatePipeline({...valid,nodes:[{...valid.nodes[0],onload:"alert(1)"},valid.nodes[1]]});expect(r.deliveryEligible).toBe(false);expect(r.diagnostics.some(d=>d.code==="SCHEMA_UNKNOWN_FIELD")).toBe(true)});
 });
