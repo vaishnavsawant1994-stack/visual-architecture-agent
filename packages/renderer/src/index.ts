@@ -30,6 +30,15 @@ export const renderers:Record<DiagramKind,Renderer>={
 };
 export function renderDiagram(ir:DiagramIR,layout:LayoutResult):RenderResult{return renderers[ir.kind](ir,layout);}
 
+export function validateRenderResult(result:RenderResult,expectedKind:DiagramKind,expectedGeometryHash:string):string[]{
+ const errors=validateSvg(result.svg);
+ if(result.kind!==expectedKind)errors.push("SVG_KIND_MISMATCH");
+ if(result.geometryHash!==expectedGeometryHash)errors.push("SVG_GEOMETRY_HASH_MISMATCH");
+ if(!result.svg.includes(`data-diagram-kind="${expectedKind}"`))errors.push("SVG_KIND_METADATA_MISSING");
+ if(!result.svg.includes(`data-geometry-hash="${expectedGeometryHash}"`))errors.push("SVG_GEOMETRY_METADATA_MISSING");
+ return errors;
+}
+
 export function validateSvg(svg:string):string[]{
  const errors:string[]=[];
  if(!svg.startsWith("<svg")||!svg.endsWith("</svg>"))errors.push("SVG_ROOT_INVALID");
