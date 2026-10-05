@@ -52,6 +52,10 @@ describe("G12 public pipeline falsification",()=>{
     expect(life.nodes.map((n:any)=>[n.id,n.label,n.metadata.state])).toEqual([["created","Created","START"],["payment","Payment","ACTIVE"],["fulfillment","Fulfillment","WAITING"],["delivery","Delivery","ACTIVE"],["completed","Completed","COMPLETED"]]);
     expect(life.relationships.map((r:any)=>[r.source,r.target,r.type])).toEqual([["created","payment","transition"],["payment","fulfillment","transition"],["fulfillment","delivery","transition"],["delivery","completed","transition"]]);
     expect(life.relationships.some((r:any)=>r.source==="completed")).toBe(false);
+    const varied=JSON.parse(run(["create","Map the process from drafting a request through review, rework if needed, approval and completion"],dir).stdout).ir;
+    expect(varied.kind).toBe("workflow");
+    expect(varied.nodes.map((n:any)=>n.id)).toEqual(["start","draft","review","approval","end"]);
+    expect(varied.relationships.some((r:any)=>r.source==="review"&&r.target==="draft")).toBe(true);
   }finally{await rm(dir,{recursive:true,force:true})}
  });
  it("analyzes a repository through the executable and keeps evidence pinned and untrusted",async()=>{
