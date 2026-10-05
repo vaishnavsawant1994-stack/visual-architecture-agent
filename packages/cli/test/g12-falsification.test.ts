@@ -36,6 +36,11 @@ describe("G12 public pipeline falsification",()=>{
     expect(preview.stdout).toContain("<!doctype html>");
    }
    expect([...kinds].sort()).toEqual(["architecture","data-flow","lifecycle","sequence","workflow"]);
+  }finally{await rm(dir,{recursive:true,force:true})}
+ });
+ it("preserves model-specific structures for public wording",async()=>{
+  const dir=await mkdtemp(join(process.cwd(),".g12-"));
+  try{
     const workflow=JSON.parse(run(["create","Show the approval workflow from draft submission through review and final approval"],dir).stdout).ir;
     expect(workflow.nodes.map((n:any)=>n.id)).toEqual(["start","draft","review","approval","end"]);
     expect(workflow.nodes.find((n:any)=>n.id==="review").type).toBe("decision");
