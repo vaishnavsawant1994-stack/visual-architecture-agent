@@ -15,7 +15,7 @@ export function validateDiagramIR(input:unknown):ValidationResult {
       fixes:["Provide version, kind, document, nodes, relationships, boundaries, evidence, and presentation."]});
     return {valid:false,diagnostics};
   }
-  const value=input as Record<string,unknown>;
+  const value=input as unknown as Record<string,unknown>;
   const checkUnknown = (object:unknown, allowed:Set<string>, path:string) => {
     if (!object || typeof object !== "object" || Array.isArray(object)) return;
     for (const key of Object.keys(object as Record<string,unknown>)) {
@@ -92,5 +92,5 @@ export function validatePipeline(input:unknown):PipelineValidationResult{
  try{const layout=layoutDiagram(ir);if(!(layout.width>0&&layout.height>0)||layout.nodes.some(n=>![n.x,n.y,n.width,n.height].every(Number.isFinite)))layoutDiagnostics.push({stage:"layout",code:"LAYOUT_INVALID",severity:"error",message:"Layout produced invalid geometry."});const rendered=renderDiagram(ir,layout);svgDiagnostics=validateRenderResult(rendered,ir.kind,layout.geometryHash).map(code=>({stage:"svg",code,severity:"error",message:code}));const artifact=exportHtml(ir,layout);artifactDiagnostics=validateExport(artifact).map(code=>({stage:"artifact",code,severity:"error",message:code}));}catch(error){layoutDiagnostics.push({stage:"layout",code:"LAYOUT_EXCEPTION",severity:"error",message:error instanceof Error?error.message:"Layout failed safely."})}
  stages.layout={valid:!layoutDiagnostics.length,diagnostics:layoutDiagnostics};stages.svg={valid:!svgDiagnostics.length,diagnostics:svgDiagnostics};stages.artifact={valid:!artifactDiagnostics.length,diagnostics:artifactDiagnostics};
  const all=Object.values(stages).flatMap(s=>s.diagnostics),deliveryEligible=!all.some(d=>d.severity==="error");stages.delivery={valid:deliveryEligible,diagnostics:deliveryEligible?[]:[{stage:"delivery",code:"DELIVERY_INELIGIBLE",severity:"error",message:"Candidate failed one or more qualification stages."}]};
- return{valid:deliveryEligible,diagnostics:[...all,...stages.delivery.diagnostics],normalized:deliveryEligible?ir:undefined,stages,deliveryEligible};
+ return{valid:deliveryEligible,diagnostics:[...all,...stages.delivery.diagnostics],...(deliveryEligible?{normalized:ir}:{}),stages,deliveryEligible};
 }

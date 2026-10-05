@@ -1,0 +1,1043 @@
+{
+  "implementationSha": "056a9eab3fd46ce73716dd7fb0c0ffbc5f748fc3",
+  "measuredTree": "76ed33b984019be4c4a703d29f5165f1d5a70258",
+  "note": "Product packages match G11 implementation SHA. Measured tree adds only the G11 docs checkpoint.",
+  "policy": {
+    "seed": "deterministic-indexed-v1",
+    "warmup": 1,
+    "repetitions": 7,
+    "layoutRepetitions": 3,
+    "viewerLoadWarmup": 1,
+    "viewerLoadRepetitions": 3,
+    "typical": "median",
+    "targets": {
+      "viewerLoadMs": 2000,
+      "searchMs": 100,
+      "focusMs": 100
+    }
+  },
+  "environment": {
+    "node": "v22.20.0",
+    "platform": "linux",
+    "release": "6.12.8+",
+    "arch": "x64",
+    "cpu": "Intel(R) Xeon(R) Platinum 8481C CPU @ 2.70GHz",
+    "cores": 2,
+    "memoryBytes": 2078199808,
+    "chromium": "Chrome for Testing 153.0.8010.12 / playwright chromium v1243"
+  },
+  "analysis": {
+    "samples": [
+      1.515,
+      1.52,
+      1.53,
+      1.606,
+      1.917,
+      1.936,
+      4.216
+    ],
+    "min": 1.515,
+    "median": 1.606,
+    "p95": 4.216,
+    "max": 4.216,
+    "mean": 2.034,
+    "findings": 200,
+    "diagnostics": 0
+  },
+  "results": [
+    {
+      "workload": {
+        "name": "nodes-100",
+        "nodes": 100,
+        "relationships": 100
+      },
+      "seed": "deterministic-indexed-v1",
+      "fixtureHash": "ac38ece14a742492a91fbf3a1f11ba2cd3926ca2f2bce9c0b2408a3cfefe7436",
+      "geometryHash": "c19e9d72",
+      "deterministic": true,
+      "counts": {
+        "nodes": 100,
+        "relationships": 100,
+        "htmlBytes": 163054,
+        "svgBytes": 68737
+      },
+      "operations": {
+        "parse": {
+          "samples": [
+            0.061,
+            0.062,
+            0.063,
+            0.065,
+            0.065,
+            0.07,
+            0.072
+          ],
+          "min": 0.061,
+          "median": 0.065,
+          "p95": 0.072,
+          "max": 0.072,
+          "mean": 0.065
+        },
+        "validation": {
+          "samples": [
+            11.64,
+            12.257,
+            13.712,
+            14.273,
+            14.972,
+            18.059,
+            19.324
+          ],
+          "min": 11.64,
+          "median": 14.273,
+          "p95": 19.324,
+          "max": 19.324,
+          "mean": 14.891
+        },
+        "layout": {
+          "samples": [
+            0.872,
+            0.918,
+            1.069
+          ],
+          "min": 0.872,
+          "median": 0.918,
+          "p95": 1.069,
+          "max": 1.069,
+          "mean": 0.953
+        },
+        "render": {
+          "samples": [
+            1.64,
+            1.762,
+            2.179,
+            2.539,
+            2.588,
+            2.682,
+            2.751
+          ],
+          "min": 1.64,
+          "median": 2.539,
+          "p95": 2.751,
+          "max": 2.751,
+          "mean": 2.306
+        },
+        "viewerHtml": {
+          "samples": [
+            1.672,
+            1.747,
+            1.921,
+            2.28,
+            2.364,
+            2.797,
+            6.683
+          ],
+          "min": 1.672,
+          "median": 2.28,
+          "p95": 6.683,
+          "max": 6.683,
+          "mean": 2.78
+        },
+        "exportSvg": {
+          "samples": [
+            2.483,
+            2.622,
+            2.647,
+            2.949,
+            3.135,
+            6.276,
+            7.272
+          ],
+          "min": 2.483,
+          "median": 2.949,
+          "p95": 7.272,
+          "max": 7.272,
+          "mean": 3.912
+        },
+        "exportHtml": {
+          "samples": [
+            4.295,
+            4.314,
+            4.42,
+            4.53,
+            4.535,
+            4.676,
+            4.835
+          ],
+          "min": 4.295,
+          "median": 4.53,
+          "p95": 4.835,
+          "max": 4.835,
+          "mean": 4.515
+        },
+        "search": {
+          "samples": [
+            0.032,
+            0.033,
+            0.033,
+            0.033,
+            0.034,
+            0.037,
+            0.088
+          ],
+          "min": 0.032,
+          "median": 0.033,
+          "p95": 0.088,
+          "max": 0.088,
+          "mean": 0.041
+        },
+        "focus": {
+          "samples": [
+            0.008,
+            0.008,
+            0.008,
+            0.008,
+            0.008,
+            0.009,
+            0.011
+          ],
+          "min": 0.008,
+          "median": 0.008,
+          "p95": 0.011,
+          "max": 0.011,
+          "mean": 0.009
+        },
+        "route": {
+          "samples": [
+            0.062,
+            0.064,
+            0.077,
+            0.1,
+            0.104,
+            0.11,
+            0.112
+          ],
+          "min": 0.062,
+          "median": 0.1,
+          "p95": 0.112,
+          "max": 0.112,
+          "mean": 0.09
+        },
+        "reach": {
+          "samples": [
+            0.086,
+            0.089,
+            0.106,
+            0.34,
+            0.514,
+            0.549,
+            0.754
+          ],
+          "min": 0.086,
+          "median": 0.34,
+          "p95": 0.754,
+          "max": 0.754,
+          "mean": 0.348
+        }
+      },
+      "checks": {
+        "validationValid": true,
+        "searchHit": true,
+        "focusNode": true,
+        "routeLength": 41,
+        "reachCount": 100
+      }
+    },
+    {
+      "workload": {
+        "name": "nodes-500",
+        "nodes": 500,
+        "relationships": 500
+      },
+      "seed": "deterministic-indexed-v1",
+      "fixtureHash": "e113e4339d2e0060db0db712e5ab0343411f084199e294830a7aebcb3c2186de",
+      "geometryHash": "9837578f",
+      "deterministic": true,
+      "counts": {
+        "nodes": 500,
+        "relationships": 500,
+        "htmlBytes": 763020,
+        "svgBytes": 336860
+      },
+      "operations": {
+        "parse": {
+          "samples": [
+            0.291,
+            0.292,
+            0.299,
+            0.321,
+            0.338,
+            0.348,
+            0.458
+          ],
+          "min": 0.291,
+          "median": 0.321,
+          "p95": 0.458,
+          "max": 0.458,
+          "mean": 0.335
+        },
+        "validation": {
+          "samples": [
+            69.235,
+            74.545,
+            80.682,
+            83.484,
+            84.798,
+            86.97,
+            127.921
+          ],
+          "min": 69.235,
+          "median": 83.484,
+          "p95": 127.921,
+          "max": 127.921,
+          "mean": 86.805
+        },
+        "layout": {
+          "samples": [
+            4.131,
+            5.989,
+            6.513
+          ],
+          "min": 4.131,
+          "median": 5.989,
+          "p95": 6.513,
+          "max": 6.513,
+          "mean": 5.544
+        },
+        "render": {
+          "samples": [
+            6.813,
+            6.915,
+            7.2,
+            7.414,
+            7.576,
+            7.881,
+            8.007
+          ],
+          "min": 6.813,
+          "median": 7.414,
+          "p95": 8.007,
+          "max": 8.007,
+          "mean": 7.401
+        },
+        "viewerHtml": {
+          "samples": [
+            8.369,
+            8.642,
+            8.724,
+            8.748,
+            9.022,
+            9.485,
+            9.661
+          ],
+          "min": 8.369,
+          "median": 8.748,
+          "p95": 9.661,
+          "max": 9.661,
+          "mean": 8.95
+        },
+        "exportSvg": {
+          "samples": [
+            9.322,
+            10.762,
+            12.73,
+            14.865,
+            18.372,
+            18.592,
+            22.405
+          ],
+          "min": 9.322,
+          "median": 14.865,
+          "p95": 22.405,
+          "max": 22.405,
+          "mean": 15.293
+        },
+        "exportHtml": {
+          "samples": [
+            16.06,
+            16.446,
+            17.32,
+            17.345,
+            17.537,
+            18.037,
+            20.148
+          ],
+          "min": 16.06,
+          "median": 17.345,
+          "p95": 20.148,
+          "max": 20.148,
+          "mean": 17.556
+        },
+        "search": {
+          "samples": [
+            0.159,
+            0.16,
+            0.163,
+            0.164,
+            0.175,
+            0.185,
+            0.249
+          ],
+          "min": 0.159,
+          "median": 0.164,
+          "p95": 0.249,
+          "max": 0.249,
+          "mean": 0.179
+        },
+        "focus": {
+          "samples": [
+            0.01,
+            0.011,
+            0.019,
+            0.02,
+            0.021,
+            0.025,
+            0.751
+          ],
+          "min": 0.01,
+          "median": 0.02,
+          "p95": 0.751,
+          "max": 0.751,
+          "mean": 0.123
+        },
+        "route": {
+          "samples": [
+            0.184,
+            0.186,
+            0.187,
+            0.188,
+            0.196,
+            0.197,
+            0.207
+          ],
+          "min": 0.184,
+          "median": 0.188,
+          "p95": 0.207,
+          "max": 0.207,
+          "mean": 0.192
+        },
+        "reach": {
+          "samples": [
+            1.725,
+            1.743,
+            1.805,
+            1.816,
+            1.861,
+            1.869,
+            1.886
+          ],
+          "min": 1.725,
+          "median": 1.816,
+          "p95": 1.886,
+          "max": 1.886,
+          "mean": 1.815
+        }
+      },
+      "checks": {
+        "validationValid": true,
+        "searchHit": true,
+        "focusNode": true,
+        "routeLength": 41,
+        "reachCount": 500
+      }
+    },
+    {
+      "workload": {
+        "name": "nodes-1000",
+        "nodes": 1000,
+        "relationships": 1000
+      },
+      "seed": "deterministic-indexed-v1",
+      "fixtureHash": "2d0f7ff7238e45fc6352e39b345a62e031e53ae83f853b5c571c7f40c206fb08",
+      "geometryHash": "ad560feb",
+      "deterministic": true,
+      "counts": {
+        "nodes": 1000,
+        "relationships": 1000,
+        "htmlBytes": 1515983,
+        "svgBytes": 673514
+      },
+      "operations": {
+        "parse": {
+          "samples": [
+            0.596,
+            0.633,
+            0.643,
+            0.675,
+            0.688,
+            0.908,
+            1.79
+          ],
+          "min": 0.596,
+          "median": 0.675,
+          "p95": 1.79,
+          "max": 1.79,
+          "mean": 0.847
+        },
+        "validation": {
+          "samples": [
+            152.331,
+            159.861,
+            172.453,
+            179.327,
+            182.776,
+            195.631,
+            204.281
+          ],
+          "min": 152.331,
+          "median": 179.327,
+          "p95": 204.281,
+          "max": 204.281,
+          "mean": 178.094
+        },
+        "layout": {
+          "samples": [
+            16.422,
+            20.527,
+            23.83
+          ],
+          "min": 16.422,
+          "median": 20.527,
+          "p95": 23.83,
+          "max": 23.83,
+          "mean": 20.26
+        },
+        "render": {
+          "samples": [
+            14.742,
+            14.916,
+            15.005,
+            15.693,
+            15.728,
+            15.759,
+            20.067
+          ],
+          "min": 14.742,
+          "median": 15.693,
+          "p95": 20.067,
+          "max": 20.067,
+          "mean": 15.987
+        },
+        "viewerHtml": {
+          "samples": [
+            19.232,
+            19.464,
+            20.675,
+            21.013,
+            23.939,
+            26.652,
+            39.02
+          ],
+          "min": 19.232,
+          "median": 21.013,
+          "p95": 39.02,
+          "max": 39.02,
+          "mean": 24.285
+        },
+        "exportSvg": {
+          "samples": [
+            19.824,
+            20.245,
+            20.418,
+            20.893,
+            21.053,
+            21.991,
+            37.406
+          ],
+          "min": 19.824,
+          "median": 20.893,
+          "p95": 37.406,
+          "max": 37.406,
+          "mean": 23.119
+        },
+        "exportHtml": {
+          "samples": [
+            36.443,
+            36.779,
+            38.697,
+            38.986,
+            39.1,
+            39.6,
+            42.172
+          ],
+          "min": 36.443,
+          "median": 38.986,
+          "p95": 42.172,
+          "max": 42.172,
+          "mean": 38.825
+        },
+        "search": {
+          "samples": [
+            0.084,
+            0.085,
+            0.087,
+            0.089,
+            0.206,
+            0.209,
+            1.675
+          ],
+          "min": 0.084,
+          "median": 0.089,
+          "p95": 1.675,
+          "max": 1.675,
+          "mean": 0.348
+        },
+        "focus": {
+          "samples": [
+            0.035,
+            0.036,
+            0.036,
+            0.036,
+            0.038,
+            0.038,
+            0.077
+          ],
+          "min": 0.035,
+          "median": 0.036,
+          "p95": 0.077,
+          "max": 0.077,
+          "mean": 0.042
+        },
+        "route": {
+          "samples": [
+            0.336,
+            0.336,
+            0.356,
+            0.376,
+            0.378,
+            0.388,
+            0.523
+          ],
+          "min": 0.336,
+          "median": 0.376,
+          "p95": 0.523,
+          "max": 0.523,
+          "mean": 0.385
+        },
+        "reach": {
+          "samples": [
+            7.002,
+            7.205,
+            7.223,
+            7.23,
+            7.359,
+            8.188,
+            10.449
+          ],
+          "min": 7.002,
+          "median": 7.23,
+          "p95": 10.449,
+          "max": 10.449,
+          "mean": 7.808
+        }
+      },
+      "checks": {
+        "validationValid": true,
+        "searchHit": true,
+        "focusNode": true,
+        "routeLength": 41,
+        "reachCount": 1000
+      }
+    },
+    {
+      "workload": {
+        "name": "relationships-5000",
+        "nodes": 1000,
+        "relationships": 5000
+      },
+      "seed": "deterministic-indexed-v1",
+      "fixtureHash": "ccc5fd1001c8be03f482d31b4af9e4314665c543c09605c47290be8d1c32ac15",
+      "geometryHash": "766cea43",
+      "deterministic": true,
+      "counts": {
+        "nodes": 1000,
+        "relationships": 5000,
+        "htmlBytes": 4095807,
+        "svgBytes": 1785866
+      },
+      "operations": {
+        "parse": {
+          "samples": [
+            2.105,
+            2.13,
+            2.165,
+            2.17,
+            2.178,
+            2.207,
+            2.24
+          ],
+          "min": 2.105,
+          "median": 2.17,
+          "p95": 2.24,
+          "max": 2.24,
+          "mean": 2.171
+        },
+        "validation": {
+          "samples": [
+            441.942,
+            452.869,
+            460.83,
+            462.6,
+            464.954,
+            493.078,
+            508.356
+          ],
+          "min": 441.942,
+          "median": 462.6,
+          "p95": 508.356,
+          "max": 508.356,
+          "mean": 469.233
+        },
+        "layout": {
+          "samples": [
+            21.231,
+            23.066,
+            26.759
+          ],
+          "min": 21.231,
+          "median": 23.066,
+          "p95": 26.759,
+          "max": 26.759,
+          "mean": 23.685
+        },
+        "render": {
+          "samples": [
+            40.213,
+            41.027,
+            42.046,
+            46.261,
+            47.013,
+            47.82,
+            48.193
+          ],
+          "min": 40.213,
+          "median": 46.261,
+          "p95": 48.193,
+          "max": 48.193,
+          "mean": 44.653
+        },
+        "viewerHtml": {
+          "samples": [
+            48.124,
+            48.631,
+            48.876,
+            49.452,
+            50.372,
+            58.912,
+            61.289
+          ],
+          "min": 48.124,
+          "median": 49.452,
+          "p95": 61.289,
+          "max": 61.289,
+          "mean": 52.237
+        },
+        "exportSvg": {
+          "samples": [
+            51.368,
+            51.463,
+            56.223,
+            58.022,
+            61.203,
+            61.574,
+            64.251
+          ],
+          "min": 51.368,
+          "median": 58.022,
+          "p95": 64.251,
+          "max": 64.251,
+          "mean": 57.729
+        },
+        "exportHtml": {
+          "samples": [
+            99.554,
+            101.508,
+            101.779,
+            102.943,
+            104.018,
+            104.437,
+            107.219
+          ],
+          "min": 99.554,
+          "median": 102.943,
+          "p95": 107.219,
+          "max": 107.219,
+          "mean": 103.065
+        },
+        "search": {
+          "samples": [
+            0.382,
+            0.395,
+            0.523,
+            0.536,
+            0.567,
+            0.645,
+            0.728
+          ],
+          "min": 0.382,
+          "median": 0.536,
+          "p95": 0.728,
+          "max": 0.728,
+          "mean": 0.539
+        },
+        "focus": {
+          "samples": [
+            0.078,
+            0.078,
+            0.079,
+            0.11,
+            0.274,
+            0.302,
+            3.221
+          ],
+          "min": 0.078,
+          "median": 0.11,
+          "p95": 3.221,
+          "max": 3.221,
+          "mean": 0.592
+        },
+        "route": {
+          "samples": [
+            1.423,
+            1.442,
+            1.45,
+            1.506,
+            1.513,
+            1.745,
+            4.69
+          ],
+          "min": 1.423,
+          "median": 1.506,
+          "p95": 4.69,
+          "max": 4.69,
+          "mean": 1.967
+        },
+        "reach": {
+          "samples": [
+            34.332,
+            34.342,
+            34.395,
+            34.396,
+            34.415,
+            34.536,
+            34.659
+          ],
+          "min": 34.332,
+          "median": 34.396,
+          "p95": 34.659,
+          "max": 34.659,
+          "mean": 34.439
+        }
+      },
+      "checks": {
+        "validationValid": true,
+        "searchHit": true,
+        "focusNode": true,
+        "routeLength": 9,
+        "reachCount": 1000
+      }
+    }
+  ],
+  "viewer": [
+    {
+      "nodes": 100,
+      "relationships": 100,
+      "htmlBytes": 163054,
+      "geometryHash": "c19e9d72",
+      "consoleErrors": [],
+      "probe": {
+        "svg": 2,
+        "nodes": 200,
+        "hash": "c19e9d72",
+        "search": 1.1000000000058208,
+        "focus": 1
+      },
+      "load": {
+        "samples": [
+          30.098,
+          34.43,
+          35.441
+        ],
+        "min": 30.098,
+        "median": 34.43,
+        "p95": 35.441,
+        "max": 35.441,
+        "mean": 33.323
+      },
+      "browserSearch": {
+        "samples": [
+          1.1,
+          1.1,
+          1.3
+        ],
+        "min": 1.1,
+        "median": 1.1,
+        "p95": 1.3,
+        "max": 1.3,
+        "mean": 1.167
+      },
+      "browserFocus": {
+        "samples": [
+          0.9,
+          1,
+          1.1
+        ],
+        "min": 0.9,
+        "median": 1,
+        "p95": 1.1,
+        "max": 1.1,
+        "mean": 1
+      }
+    },
+    {
+      "nodes": 500,
+      "relationships": 500,
+      "htmlBytes": 763020,
+      "geometryHash": "9837578f",
+      "consoleErrors": [],
+      "probe": {
+        "svg": 2,
+        "nodes": 1000,
+        "hash": "9837578f",
+        "search": 4.300000000017462,
+        "focus": 3.6999999999825377
+      },
+      "load": {
+        "samples": [
+          69.876,
+          71.469,
+          97.792
+        ],
+        "min": 69.876,
+        "median": 71.469,
+        "p95": 97.792,
+        "max": 97.792,
+        "mean": 79.712
+      },
+      "browserSearch": {
+        "samples": [
+          4.3,
+          4.5,
+          4.5
+        ],
+        "min": 4.3,
+        "median": 4.5,
+        "p95": 4.5,
+        "max": 4.5,
+        "mean": 4.433
+      },
+      "browserFocus": {
+        "samples": [
+          2.8,
+          2.9,
+          3.7
+        ],
+        "min": 2.8,
+        "median": 2.9,
+        "p95": 3.7,
+        "max": 3.7,
+        "mean": 3.133
+      }
+    },
+    {
+      "nodes": 1000,
+      "relationships": 1000,
+      "htmlBytes": 1515983,
+      "geometryHash": "ad560feb",
+      "consoleErrors": [],
+      "probe": {
+        "svg": 2,
+        "nodes": 2000,
+        "hash": "ad560feb",
+        "search": 12.700000000011642,
+        "focus": 6.099999999976717
+      },
+      "load": {
+        "samples": [
+          122.553,
+          153.36,
+          207.982
+        ],
+        "min": 122.553,
+        "median": 153.36,
+        "p95": 207.982,
+        "max": 207.982,
+        "mean": 161.298
+      },
+      "browserSearch": {
+        "samples": [
+          8.5,
+          10.3,
+          12.7
+        ],
+        "min": 8.5,
+        "median": 10.3,
+        "p95": 12.7,
+        "max": 12.7,
+        "mean": 10.5
+      },
+      "browserFocus": {
+        "samples": [
+          6.1,
+          6.2,
+          6.2
+        ],
+        "min": 6.1,
+        "median": 6.2,
+        "p95": 6.2,
+        "max": 6.2,
+        "mean": 6.167
+      }
+    },
+    {
+      "nodes": 1000,
+      "relationships": 5000,
+      "htmlBytes": 4095807,
+      "geometryHash": "766cea43",
+      "consoleErrors": [],
+      "probe": {
+        "svg": 2,
+        "nodes": 2000,
+        "hash": "766cea43",
+        "search": 40.30000000001746,
+        "focus": 23.79999999998836
+      },
+      "load": {
+        "samples": [
+          235.223,
+          242.535,
+          467.473
+        ],
+        "min": 235.223,
+        "median": 242.535,
+        "p95": 467.473,
+        "max": 467.473,
+        "mean": 315.077
+      },
+      "browserSearch": {
+        "samples": [
+          23.7,
+          40.3,
+          42.2
+        ],
+        "min": 23.7,
+        "median": 40.3,
+        "p95": 42.2,
+        "max": 42.2,
+        "mean": 35.4
+      },
+      "browserFocus": {
+        "samples": [
+          15.7,
+          16.7,
+          23.8
+        ],
+        "min": 15.7,
+        "median": 16.7,
+        "p95": 23.8,
+        "max": 23.8,
+        "mean": 18.733
+      }
+    }
+  ]
+}

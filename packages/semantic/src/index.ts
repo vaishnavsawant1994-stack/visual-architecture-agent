@@ -1,6 +1,6 @@
 import type {Diagnostic,DiagramIR,DiagramKind,DiagramNode} from "@visual-architecture/ir";
 export type SemanticEngine={kind:DiagramKind;validate(ir:DiagramIR):Diagnostic[]};
-const error=(code:string,subject:string,message:string,context?:Record<string,unknown>):Diagnostic=>({stage:"semantic",code,severity:"error",subject,message,context});
+const error=(code:string,subject:string,message:string,context?:Record<string,unknown>):Diagnostic=>({stage:"semantic",code,severity:"error",subject,message,...(context===undefined?{}:{context})});
 const types=(ir:DiagramIR,t:string)=>ir.nodes.filter(n=>n.type===t);
 const hasMeta=(n:DiagramNode,k:string)=>n.metadata?.[k]!==undefined;
 const boundaryChecks=(ir:DiagramIR)=>{const out:Diagnostic[]=[];const ns=new Set(ir.nodes.map(n=>n.id)),bs=new Set(ir.boundaries.map(b=>b.id));for(const b of ir.boundaries){for(const n of b.nodeIds??[])if(!ns.has(n))out.push(error("BOUNDARY_NODE_MISSING",b.id,"Boundary references a missing node.",{nodeId:n}));for(const x of b.boundaryIds??[])if(!bs.has(x)||x===b.id)out.push(error("BOUNDARY_NESTING_INVALID",b.id,"Boundary nesting reference is invalid.",{boundaryId:x}))}return out};
