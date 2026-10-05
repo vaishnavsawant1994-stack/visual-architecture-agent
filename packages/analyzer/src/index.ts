@@ -17,7 +17,7 @@ const lineOf=(content:string,needle:string)=>{const ls=lines(content);const i=ls
 const source=(s:RepositorySnapshot,f:RepositoryFile,lineStart:number,lineEnd=lineStart):SourceRange=>({repository:s.repository,commitSha:s.commitSha,file:f.path,lineStart,lineEnd,blobSha:f.blobSha,contentHash:f.contentHash,excerpt:redact(lines(f.content).slice(lineStart-1,lineEnd).join("\n")).slice(0,300)});
 const finding=(s:RepositorySnapshot,f:RepositoryFile,id:string,kind:string,label:string,classification:EvidenceClassification,confidence:number,line=1,metadata?:Record<string,unknown>):Finding=>({id,kind,label,classification,confidence,source:source(s,f,line),...(metadata?{metadata}:{})});
 const stripComments=(c:string)=>c.replace(/\/\*[\s\S]*?\*\//g,"").replace(/(^|\s)\/\/.*$/gm,"$1").replace(/^\s*#.*$/gm,"");
-const redact=(s:string)=>s.replace(/((?:api[_-]?key|token|password|secret|private[_-]?key)\s*[:=]\s*)[^\s,;"']+/gi,"$1[REDACTED]").replace(/(postgres(?:ql)?:\/\/)[^@\s]+@/gi,"$1[REDACTED]@");
+const redact=(s:string)=>s.replace(/((?:api[_-]?key|token|password|secret|private[_-]?key)\s*[:=]\s*)(?:"[^"\n]*"|'[^'\n]*'|`[^`\n]*`|[^\s,;"']+)/gi,"$1[REDACTED]").replace(/((?:api[_-]?key|token|password|secret|private[_-]?key)"\s*:\s*)(?:"[^"\n]*"|'[^'\n]*')/gi,"$1[REDACTED]").replace(/(postgres(?:ql)?:\/\/)[^@\s]+@/gi,"$1[REDACTED]@");
 const pathUnsafe=(p:string)=>p.startsWith("/")||p.startsWith("\\")||p.split("/").some(x=>x==="..")||p.split("/").length>MAX_DEPTH;
 const ignored=(f:RepositoryFile)=>f.generated||f.vendored||IGNORE.test(f.path);
 const importSignals=(c:string)=>[...c.matchAll(/(?:import\s+(?:[^"'\n]+?\s+from\s+)?|require\s*\()\s*["']([^"']+)["']/g)].map(m=>({name:m[1]!,index:m.index??0}));
