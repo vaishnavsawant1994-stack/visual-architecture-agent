@@ -60,6 +60,10 @@ describe("G12 public pipeline falsification",()=>{
     expect(seqVar.kind).toBe("sequence");
     expect(seqVar.nodes.map((n:any)=>n.id)).toEqual(["user","api-gateway","auth-service","session-store","application"]);
     expect(seqVar.relationships.map((r:any)=>r.metadata.order)).toEqual([1,2,3,4,5,6]);
+    const ordered=JSON.parse(run(["create","Diagram the ordered messages between user and API gateway"],dir).stdout).ir;
+    expect(ordered.kind).toBe("sequence");
+    expect(ordered.nodes.map((n:any)=>n.id)).toEqual(["user","api-gateway","auth-service","session-store","application"]);
+    expect(ordered.relationships.map((r:any)=>r.metadata.order)).toEqual([1,2,3,4,5,6]);
   }finally{await rm(dir,{recursive:true,force:true})}
  });
  it("analyzes a repository through the executable and keeps evidence pinned and untrusted",async()=>{
