@@ -36,6 +36,11 @@ describe("G12 public pipeline falsification",()=>{
     expect(preview.stdout).toContain("<!doctype html>");
    }
    expect([...kinds].sort()).toEqual(["architecture","data-flow","lifecycle","sequence","workflow"]);
+    const workflow=JSON.parse(run(["create","Show the approval workflow from draft submission through review and final approval"],dir).stdout).ir;
+    expect(workflow.nodes.map((n:any)=>n.id)).toEqual(["start","draft","review","approval","end"]);
+    expect(workflow.nodes.find((n:any)=>n.id==="review").type).toBe("decision");
+    expect(workflow.relationships.some((r:any)=>r.source==="review"&&r.target==="draft"&&r.metadata?.mainPath!==true)).toBe(true);
+    expect(workflow.relationships.filter((r:any)=>r.metadata?.mainPath===true).map((r:any)=>r.id)).toEqual(["start-draft","draft-review","review-approval","approval-end"]);
   }finally{await rm(dir,{recursive:true,force:true})}
  });
  it("analyzes a repository through the executable and keeps evidence pinned and untrusted",async()=>{
