@@ -45,6 +45,9 @@ describe("G12 public pipeline falsification",()=>{
     expect(sequence.nodes.map((n:any)=>n.label)).toEqual(["User","API Gateway","Authentication Service","Session Store","Application"]);
     expect(sequence.relationships.map((r:any)=>r.metadata.order)).toEqual([1,2,3,4,5,6]);
     expect(sequence.relationships.map((r:any)=>[r.source,r.target])).toEqual([["user","api-gateway"],["api-gateway","auth-service"],["auth-service","session-store"],["session-store","auth-service"],["auth-service","api-gateway"],["api-gateway","application"]]);
+    const flow=JSON.parse(run(["create","Show how customer data flows from ingestion through validation, storage, processing, and reporting"],dir).stdout).ir;
+    expect(flow.nodes.map((n:any)=>[n.id,n.type])).toEqual([["customer","source"],["ingestion","stage"],["validation","process"],["storage","store"],["processing","processor"],["reporting","destination"]]);
+    expect(flow.relationships.map((r:any)=>[r.source,r.target,r.type])).toEqual([["customer","ingestion","flow"],["ingestion","validation","flow"],["validation","storage","flow"],["storage","processing","flow"],["processing","reporting","flow"]]);
   }finally{await rm(dir,{recursive:true,force:true})}
  });
  it("analyzes a repository through the executable and keeps evidence pinned and untrusted",async()=>{
