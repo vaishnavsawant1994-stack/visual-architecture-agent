@@ -41,6 +41,10 @@ describe("G12 public pipeline falsification",()=>{
     expect(workflow.nodes.find((n:any)=>n.id==="review").type).toBe("decision");
     expect(workflow.relationships.some((r:any)=>r.source==="review"&&r.target==="draft"&&r.metadata?.mainPath!==true)).toBe(true);
     expect(workflow.relationships.filter((r:any)=>r.metadata?.mainPath===true).map((r:any)=>r.id)).toEqual(["start-draft","draft-review","review-approval","approval-end"]);
+    const sequence=JSON.parse(run(["create","Show the message sequence between the user, API gateway, authentication service, session store, and application"],dir).stdout).ir;
+    expect(sequence.nodes.map((n:any)=>n.label)).toEqual(["User","API Gateway","Authentication Service","Session Store","Application"]);
+    expect(sequence.relationships.map((r:any)=>r.metadata.order)).toEqual([1,2,3,4,5,6]);
+    expect(sequence.relationships.map((r:any)=>[r.source,r.target])).toEqual([["user","api-gateway"],["api-gateway","auth-service"],["auth-service","session-store"],["session-store","auth-service"],["auth-service","api-gateway"],["api-gateway","application"]]);
   }finally{await rm(dir,{recursive:true,force:true})}
  });
  it("analyzes a repository through the executable and keeps evidence pinned and untrusted",async()=>{
