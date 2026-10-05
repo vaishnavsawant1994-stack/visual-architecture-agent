@@ -48,6 +48,10 @@ describe("G12 public pipeline falsification",()=>{
     const flow=JSON.parse(run(["create","Show how customer data flows from ingestion through validation, storage, processing, and reporting"],dir).stdout).ir;
     expect(flow.nodes.map((n:any)=>[n.id,n.type])).toEqual([["customer","source"],["ingestion","stage"],["validation","process"],["storage","store"],["processing","processor"],["reporting","destination"]]);
     expect(flow.relationships.map((r:any)=>[r.source,r.target,r.type])).toEqual([["customer","ingestion","flow"],["ingestion","validation","flow"],["validation","storage","flow"],["storage","processing","flow"],["processing","reporting","flow"]]);
+    const life=JSON.parse(run(["create","Show the lifecycle of an order from creation through payment, fulfillment, delivery, and completion"],dir).stdout).ir;
+    expect(life.nodes.map((n:any)=>[n.id,n.label,n.metadata.state])).toEqual([["created","Created","START"],["payment","Payment","ACTIVE"],["fulfillment","Fulfillment","WAITING"],["delivery","Delivery","ACTIVE"],["completed","Completed","COMPLETED"]]);
+    expect(life.relationships.map((r:any)=>[r.source,r.target,r.type])).toEqual([["created","payment","transition"],["payment","fulfillment","transition"],["fulfillment","delivery","transition"],["delivery","completed","transition"]]);
+    expect(life.relationships.some((r:any)=>r.source==="completed")).toBe(false);
   }finally{await rm(dir,{recursive:true,force:true})}
  });
  it("analyzes a repository through the executable and keeps evidence pinned and untrusted",async()=>{
