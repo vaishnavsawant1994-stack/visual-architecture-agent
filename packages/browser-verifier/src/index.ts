@@ -26,4 +26,4 @@ export async function verifyArtifact(a:ExportArtifact,driver:BrowserDriver,viewp
  for(const viewport of viewports)out.push(verifyObservation(await driver.open(html,viewport,true)));return out;
 }
 export function deliveryErrors(reports:VerificationReport[]):string[]{return reports.flatMap(r=>r.diagnostics.filter(d=>d.severity==="error").map(d=>d.code))}
-export {verifyHtmlStructure,type StructuralReport} from "./structural";
+export {verifyHtmlStructure,type StructuralReport} from "./structural.ts";
