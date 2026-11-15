@@ -34,3 +34,7 @@ pnpm build
 ## Release rule
 
 Do not claim 100% reference parity or production readiness until the frozen G12 requirements are all satisfied with reproducible executable evidence, real browser and accessibility observations, actual raster artifact tests, and an accepted release review.
+
+## Detailed project guide
+
+The [**Project Handbook**](docs/PROJECT_HANDBOOK.md) describes the repository's specific goals, users, source architecture, functional areas, current qualification limits, development setup, security requirements and next milestones. It differentiates implemented source from unverified or planned functionality.
